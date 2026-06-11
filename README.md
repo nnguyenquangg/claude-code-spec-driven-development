@@ -30,7 +30,14 @@ A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in 
 ╰──────────────────────────────────────────────────────────────
 ```
 
-**Why split?** `/my-goal` only plans — it never writes production code, so a human reviews the specs + ADRs before any implementation. `/implement-specs` is the build phase; invoking it *is* the approval. **Adaptive interrogation:** how hard `/my-goal` grills you depends on how clear the task is (🟢 light → 🔴 grill hard). Override anytime ("nhẹ thôi" / "grill kỹ").
+### Why two phases?
+
+Most AI coding loops blur planning and building, so unverified assumptions get written into code before anyone can catch them. Separating the phases puts a deliberate review gate between *deciding what to build* and *building it*:
+
+- **`/my-goal` plans only.** It produces specs and ADRs but never writes production code — you review and approve the design before a single line is implemented.
+- **`/implement-specs` builds.** Invoking it is the approval signal; it implements strictly against the approved specs and ADRs, then verifies the result against them.
+
+**Adaptive interrogation.** `/my-goal` calibrates how much it questions you to how clear the request is — a well-scoped task gets a light pass, an ambiguous one gets thoroughly interrogated — and you can raise or lower that depth at any time.
 
 ## What's in this repo
 
@@ -76,13 +83,13 @@ Then install the dependencies above, and **restart Claude Code** so the new skil
 ## Usage
 
 ```
-/my-goal "add Excel export to the P&L report"   # Phase 1 — plan it: specs + ADRs, then stops for review
-# … you review & approve the specs/ADRs …
-/implement-specs                                 # Phase 2 — build it: spec-loop until the code matches
-/what-now                                        # forgot where you are? this orients you
-/spec-loop                                       # just the autonomous implement-until-match loop on the active change
+/my-goal "add Excel export to the P&L report"   # Phase 1 — plan: produce specs + ADRs, then stop for review
+# review and approve the specs / ADRs
+/implement-specs                                 # Phase 2 — build: run spec-loop until the code matches the specs
+/what-now                                        # show where you are in the pipeline and what to run next
+/spec-loop                                       # run the autonomous implement-until-match loop on the active change
 ```
 
 ## License
 
-MIT (the three skills/commands in this repo). `grill-me` and OpenSpec are separate projects under their own licenses.
+MIT — covers the skills and commands in this repo. `grill-me`, OpenSpec, and the `dev-workflows` / `fullstack-dev-skills` plugin packs are separate projects under their own licenses.
