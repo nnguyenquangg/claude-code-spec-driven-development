@@ -4,30 +4,30 @@ A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in 
 
 ## The pipeline (two phases, human review in between)
 
-```mermaid
-flowchart LR
-    subgraph P1["PHASE 1 · Plan &amp; Specify — /my-goal"]
-        direction TB
-        A1["0 · Resume-check"] --> A2["1 · Rate clarity 🟢 / 🟡 / 🔴"]
-        A2 --> A3["2 · Clarify — grill-me / explore"]
-        A3 --> A4["3 · /opsx:propose → specs + tasks"]
-        A4 --> A5["4 · Write ADR(s)"]
-        A5 --> A6["5 · Recommend experts"]
-        A6 --> A7["6 · STOP — hand off for review"]
-    end
-
-    GATE{{"👁  human reviews &amp; approves specs + ADRs"}}
-
-    subgraph P2["PHASE 2 · Build — /implement-specs"]
-        direction TB
-        B1["0 · Load change + ADRs + experts"] --> B2["1 · Confirm experts"]
-        B2 --> B3["2 · spec-loop: implement → review → fix → repeat (cap 6)"]
-        B3 --> B4["3 · Quality gate (lint / build / test)"]
-        B4 --> B5["4 · /opsx:archive"]
-        B5 --> B6["5 · Auto-record logic + why to memory"]
-    end
-
-    A7 --> GATE --> B1
+```text
+╭─ PHASE 1 · Plan & Specify ──────────────────  /my-goal "<goal>"
+│
+│   0  Resume-check
+│   1  Rate clarity        🟢 light · 🟡 some · 🔴 grill hard
+│   2  Clarify             grill-me / /opsx:explore
+│   3  Propose             /opsx:propose → proposal + design + tasks
+│   4  Write ADR(s)        for the significant decisions
+│   5  Recommend experts   (recorded for Phase 2)
+│   6  STOP                hand specs + ADRs to the reviewer
+╰──────────────────────────────────────────────────────────────
+                     │
+             👁  human reviews & approves specs + ADRs
+                     │
+                     ▼
+╭─ PHASE 2 · Build ───────────────────────────  /implement-specs
+│
+│   0  Load                change + ADRs + recommended experts
+│   1  Confirm experts
+│   2  spec-loop           implement → review → fix → repeat (cap 6)
+│   3  Quality gate        lint / build / test
+│   4  Archive             /opsx:archive
+│   5  Record context      logic + why → memory
+╰──────────────────────────────────────────────────────────────
 ```
 
 **Why split?** `/my-goal` only plans — it never writes production code, so a human reviews the specs + ADRs before any implementation. `/implement-specs` is the build phase; invoking it *is* the approval. **Adaptive interrogation:** how hard `/my-goal` grills you depends on how clear the task is (🟢 light → 🔴 grill hard). Override anytime ("nhẹ thôi" / "grill kỹ").
