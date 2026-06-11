@@ -12,8 +12,8 @@ This project uses **OpenSpec** (`@fission-ai/openspec`, global; CLI: `openspec`)
 
 **Operating rule — do this without being asked.** When the user states a requirement in plain language ("add X", "fix Y", "build Z"), proactively drive the flow yourself — don't wait for them to say "give me a spec".
 
-1. **Plan & Specify (`/my-goal`)** — `/opsx:propose "<requirement>"`: scaffold the change, generate proposal/design/tasks + delta specs; write ADRs; recommend experts. **Then stop for review — don't code yet.**
-2. **Build (`/implement-specs`)** — once specs + ADRs are approved: `/opsx:apply`, or hands-off via **`spec-loop`** (implement → independent fresh-subagent review vs finalized specs → fix → repeat, cap 6 → quality gate).
+1. **Plan & Specify (`/my-goal`)** — **first** interview with `grill-me` if there are open decisions (`/opsx:explore` for fuzzy scope) — grilling happens here, during spec creation, **never after code**. Then `/opsx:propose "<requirement>"`: scaffold the change, generate proposal/design/tasks + delta specs; write ADRs; recommend experts. **Then stop for review — don't code yet.**
+2. **Build (`/implement-specs`)** — once specs + ADRs are approved: `/opsx:apply`, or hands-off via **`spec-loop`** (implement → independent fresh-subagent review vs finalized specs → fix → repeat, cap 6 → quality gate). No grilling here — questions belong to Phase 1.
 3. **Archive** — `/opsx:archive` to fold deltas into `openspec/specs/`. `/opsx:sync` updates main specs without archiving.
 4. **Explore** — for fuzzy requests, `/opsx:explore` first.
 
