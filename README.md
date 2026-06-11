@@ -1,4 +1,4 @@
-# claude-sdd-pipeline
+# claude-code-spec-driven-development
 
 A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in plain language and let Claude drive the whole pipeline: clarify → specs → implement-until-it-matches → archive → record context. Built on top of [OpenSpec](https://github.com/Fission-AI/OpenSpec).
 
@@ -49,8 +49,8 @@ After install, run `openspec init --tools claude` in each project. `my-goal` onl
 ## Install
 
 ```bash
-git clone <this-repo> claude-sdd-pipeline
-cd claude-sdd-pipeline
+git clone git@github.com:nnguyenquangg/claude-code-spec-driven-development.git
+cd claude-code-spec-driven-development
 ./install.sh          # symlinks into ~/.claude (default) — re-run after pulling updates
 ./install.sh --copy   # copy instead of symlink
 ```
