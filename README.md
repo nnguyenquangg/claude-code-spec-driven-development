@@ -31,11 +31,18 @@ A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in 
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
 | `install.sh` | Symlinks skills/commands into `~/.claude/` and checks dependencies |
 
-## Dependencies (not bundled)
+## Dependencies (auto-installed by `install.sh`)
 
-- **OpenSpec CLI** — `npm install -g @fission-ai/openspec@latest`, then `openspec init --tools claude` in each project.
-- **grill-me** skill (by [@mattpocock](https://github.com/mattpocock/skills), MIT) — `npx skills add mattpocock/skills --skill=grill-me -y -g`. Used by Step 2; the pipeline degrades gracefully (asks inline) if absent.
-- *(optional, for Step 4 expert routing)* the [`dev-workflows`](https://github.com/) and `fullstack-dev-skills` skill packs, if you want the named tech experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …). `my-goal` only ever picks experts that are actually present in your environment.
+`install.sh` installs all of these for you (and is idempotent — skips anything already present). They are **not** vendored into this repo, just installed from their own sources:
+
+| Dependency | Source | Used by | Manual command |
+|------------|--------|---------|----------------|
+| **OpenSpec CLI** | npm `@fission-ai/openspec` | Steps 3/7 (propose/archive) | `npm install -g @fission-ai/openspec@latest` |
+| **grill-me** skill | [@mattpocock](https://github.com/mattpocock/skills) (MIT) | Step 2 (clarify) | `npx skills add mattpocock/skills --skill=grill-me -y -g` |
+| **dev-workflows** plugin | gh `shinpr/claude-code-workflows` | Step 4/6 (`task-analyzer`, `code-verifier`, `quality-fixer`) | `claude plugin marketplace add shinpr/claude-code-workflows && claude plugin install dev-workflows@claude-code-workflows` |
+| **fullstack-dev-skills** plugin | gh `jeffallan/claude-skills` | Step 4 experts (`nestjs-expert`, `postgres-pro`, `react-expert`, `typescript-pro`, …) | `claude plugin marketplace add jeffallan/claude-skills && claude plugin install fullstack-dev-skills@fullstack-dev-skills` |
+
+After install, run `openspec init --tools claude` in each project. `my-goal` only ever picks experts that are actually present in your environment, so the two plugin packs are recommended but not strictly required.
 
 ## Install
 
