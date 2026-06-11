@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the claude-sdd-pipeline skills & commands into ~/.claude.
+# Install the claude-code-spec-driven-development skills & commands into ~/.claude.
 # Default: symlink (so `git pull` updates them live). Use --copy to copy instead.
 set -euo pipefail
 
