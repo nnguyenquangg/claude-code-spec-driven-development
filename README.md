@@ -2,6 +2,12 @@
 
 A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in plain language and let Claude drive the whole pipeline: clarify → specs → implement-until-it-matches → archive → record context. Built on top of [OpenSpec](https://github.com/Fission-AI/OpenSpec).
 
+**Two tracks, matched to the work:**
+
+- **Feature / non-trivial change → the SDD pipeline** (`/my-goal` → review → `/implement-specs`, below).
+- **Small bug → `/fix`** — a lightweight lane: diagnose root cause → pick the right tech-expert → minimal fix → verify. No specs, no ADR, no review gate. It auto-escalates to `/my-goal` if the bug turns out to need a design change.
+- **Typo / one-liner →** just do it, no skill.
+
 ## The pipeline (two phases, human review in between)
 
 ```text
@@ -45,9 +51,10 @@ Most AI coding loops blur planning and building, so unverified assumptions get w
 |------|------|
 | `skills/my-goal/` | **Phase 1** — clarify → specs + ADRs → recommend experts → STOP for review (no code) |
 | `skills/implement-specs/` | **Phase 2** — load approved specs/ADRs → spec-loop via experts → quality gate → archive → record context |
+| `skills/fix/` | **Bug fast-track** — diagnose root cause → pick the right expert → minimal fix → verify; no specs/ADR/gate; auto-escalates to `/my-goal` if it's bigger than a bug |
 | `skills/spec-loop/` | Autonomous implement → **independent** fresh-subagent review vs FINAL specs → fix → repeat until matched (cap 6) |
 | `skills/what-now/` | Read-only cheat-sheet — "you are here" on the pipeline + next command + skill inventory |
-| `commands/*.md` | Thin slash-command wrappers (`/my-goal`, `/implement-specs`, `/spec-loop`, `/what-now`) |
+| `commands/*.md` | Thin slash-command wrappers (`/my-goal`, `/implement-specs`, `/fix`, `/spec-loop`, `/what-now`) |
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
 | `install.sh` | Installs skills/commands into `~/.claude/` + all dependencies |
 
@@ -83,10 +90,11 @@ Then install the dependencies above, and **restart Claude Code** so the new skil
 ## Usage
 
 ```
-/my-goal "add Excel export to the P&L report"   # Phase 1 — plan: produce specs + ADRs, then stop for review
+/fix "P&L total ignores refunds"                 # small bug — diagnose, fix via the right expert, verify
+/my-goal "add Excel export to the P&L report"    # feature — Phase 1: produce specs + ADRs, then stop for review
 # review and approve the specs / ADRs
-/implement-specs                                 # Phase 2 — build: run spec-loop until the code matches the specs
-/what-now                                        # show where you are in the pipeline and what to run next
+/implement-specs                                 # feature — Phase 2: run spec-loop until the code matches the specs
+/what-now                                        # show where you are and what to run next
 /spec-loop                                       # run the autonomous implement-until-match loop on the active change
 ```
 

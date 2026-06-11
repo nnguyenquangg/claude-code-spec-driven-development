@@ -17,4 +17,6 @@ This project uses **OpenSpec** (`@fission-ai/openspec`, global; CLI: `openspec`)
 3. **Archive** — `/opsx:archive` to fold deltas into `openspec/specs/`. `/opsx:sync` updates main specs without archiving.
 4. **Explore** — for fuzzy requests, `/opsx:explore` first.
 
-**Skip the loop for** trivial one-liners, typos, quick questions, or pure debugging with no spec impact.
+**Bugs use `/fix`, not `/my-goal`.** For a small bug, run the `fix` skill / `/fix`: diagnose root cause → pick the right tech-expert for the affected stack → minimal fix → verify. No specs/ADR/review gate; it auto-escalates to `/my-goal` if the bug turns out to need a design change.
+
+**Skip everything for** trivial one-liners, typos, or quick questions — `/fix` for bugs, `/my-goal` for features, direct for trivial edits.

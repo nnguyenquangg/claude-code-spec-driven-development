@@ -22,7 +22,12 @@ For the active/most-recent change, also peek at `tasks.md` checkbox progress (vi
 Render this, marking the current stage with `👉`:
 
 ```
-🗺️  SPEC-DRIVEN PIPELINE  (2 phases, human review in between)
+🗺️  CHỌN ĐƯỜNG THEO LOẠI VIỆC
+  • Bug / lỗi nhỏ      → /fix          (diagnose → chọn expert → minimal fix → verify)
+  • Feature / thay đổi → /my-goal …    (đường SDD 2 phase bên dưới)
+  • Typo / 1 dòng      → làm thẳng, không cần skill
+
+🗺️  SPEC-DRIVEN PIPELINE  (cho feature — 2 phase, review ở giữa)
   ① Plan & Specify → /my-goal "<goal>"     (clarify → specs + ADR → STOP for review)
         ⤷ uses grill-me / /opsx:explore / /opsx:propose
   — 👁  human reviews & approves specs + ADRs —
@@ -40,6 +45,7 @@ One line: the exact command to run next given the detected stage.
 
 ## 4. Skill / agent inventory
 List the toolkit, one line each, so they remember what's available:
+- `/fix <bug>` — **đường nhẹ cho bug**: diagnose → chọn expert → minimal fix → verify; tự leo thang sang /my-goal nếu hoá ra to
 - `/my-goal <mô tả>` — **Phase 1**: clarify → specs + ADR → recommend expert → DỪNG cho review (không code)
 - `/implement-specs` — **Phase 2**: sau khi chốt specs/ADR → spec-loop code qua experts → quality gate → archive → ghi memory
 - `grill-me` — phỏng vấn bạn để chốt plan
