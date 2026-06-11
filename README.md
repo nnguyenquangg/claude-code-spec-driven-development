@@ -2,34 +2,36 @@
 
 A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in plain language and let Claude drive the whole pipeline: clarify → specs → implement-until-it-matches → archive → record context. Built on top of [OpenSpec](https://github.com/Fission-AI/OpenSpec).
 
-## The pipeline
+## The pipeline (two phases, human review in between)
 
 ```
-/my-goal "<what you want>"
-   │
-   0. Resume-check        — am I already mid-way on this goal?
-   1. Rate clarity        — 🟢 clear / 🟡 medium / 🔴 fuzzy  → pick autonomy lane
-   2. Clarify             — grill-me / /opsx:explore  (lane-dependent)
-   3. /opsx:propose       — generate proposal + design + specs + tasks
-   4. Tech analysis       — task-analyzer → pick expert skills to drive the code
-   5. Checkpoint          — approve specs + experts (gate only for 🟡/🔴)
-   6. spec-loop           — implement → independent review vs specs → fix → repeat
-   7. /opsx:archive       — fold delta specs into the source-of-truth specs
-   8. Capture context     — auto-write the non-obvious logic + why to memory
+PHASE 1 — Plan & Specify        PHASE 2 — Build
+/my-goal "<what you want>"       /implement-specs
+   │                               │
+   0. Resume-check                 0. Load finalized change + ADRs + experts
+   1. Rate clarity 🟢/🟡/🔴         1. Confirm the recommended experts
+   2. Clarify (grill-me/explore)   2. spec-loop: implement (as experts)
+   3. /opsx:propose → specs/tasks       → independent review vs specs+ADR
+   4. Write ADR(s) for decisions        → fix → repeat (cap 6)
+   5. Recommend impl. experts      3. Quality gate (lint/build/test)
+   6. STOP → hand specs for review 4. /opsx:archive
+                                   5. Auto-record logic + why to memory
+        └──── 👁 human reviews & approves specs + ADRs ────┘
 ```
 
-**Adaptive gating:** how often Claude stops to check in is decided by how clear the task is. Clear tasks run hands-off; fuzzy ones get interrogated first. You can override the lane anytime ("full auto" / "grill me hard").
+**Why split?** `/my-goal` only plans — it never writes production code, so a human reviews the specs + ADRs before any implementation. `/implement-specs` is the build phase; invoking it *is* the approval. **Adaptive interrogation:** how hard `/my-goal` grills you depends on how clear the task is (🟢 light → 🔴 grill hard). Override anytime ("nhẹ thôi" / "grill kỹ").
 
 ## What's in this repo
 
 | Path | What |
 |------|------|
-| `skills/my-goal/` | Orchestrator skill — runs the whole pipeline, adaptive autonomy, picks expert skills, auto-records context |
-| `skills/spec-loop/` | Autonomous implement → **independent** fresh-subagent review vs FINAL specs → fix → repeat until matched (cap 6 iterations) |
+| `skills/my-goal/` | **Phase 1** — clarify → specs + ADRs → recommend experts → STOP for review (no code) |
+| `skills/implement-specs/` | **Phase 2** — load approved specs/ADRs → spec-loop via experts → quality gate → archive → record context |
+| `skills/spec-loop/` | Autonomous implement → **independent** fresh-subagent review vs FINAL specs → fix → repeat until matched (cap 6) |
 | `skills/what-now/` | Read-only cheat-sheet — "you are here" on the pipeline + next command + skill inventory |
-| `commands/*.md` | Thin slash-command wrappers (`/my-goal`, `/spec-loop`, `/what-now`) |
+| `commands/*.md` | Thin slash-command wrappers (`/my-goal`, `/implement-specs`, `/spec-loop`, `/what-now`) |
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
-| `install.sh` | Symlinks skills/commands into `~/.claude/` and checks dependencies |
+| `install.sh` | Installs skills/commands into `~/.claude/` + all dependencies |
 
 ## Dependencies (auto-installed by `install.sh`)
 
@@ -63,7 +65,9 @@ Then install the dependencies above, and **restart Claude Code** so the new skil
 ## Usage
 
 ```
-/my-goal "add Excel export to the P&L report"   # run the whole pipeline
+/my-goal "add Excel export to the P&L report"   # Phase 1 — plan it: specs + ADRs, then stops for review
+# … you review & approve the specs/ADRs …
+/implement-specs                                 # Phase 2 — build it: spec-loop until the code matches
 /what-now                                        # forgot where you are? this orients you
 /spec-loop                                       # just the autonomous implement-until-match loop on the active change
 ```

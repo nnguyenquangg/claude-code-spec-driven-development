@@ -13,8 +13,8 @@ openspec list --json
 ```
 For the active/most-recent change, also peek at `tasks.md` checkbox progress (via `openspec status --change <name> --json`). Map it to a stage:
 - no change → **Stage 0: Idea** (nothing started)
-- change exists, specs being written / not confirmed → **Stage 1: Specs**
-- specs final, tasks unchecked or partial → **Stage 2: Implement**
+- change exists, specs/ADRs being written, not yet reviewed → **Stage 1: Plan & Specify** (`/my-goal`)
+- specs + ADRs final/approved, tasks unchecked or partial → **Stage 2: Build** (`/implement-specs`)
 - tasks all checked, not archived → **Stage 3: Archive**
 - archived → **Done**
 
@@ -22,26 +22,33 @@ For the active/most-recent change, also peek at `tasks.md` checkbox progress (vi
 Render this, marking the current stage with `👉`:
 
 ```
-🗺️  SPEC-DRIVEN PIPELINE
-  ① Idea      → grill-me / /opsx:explore      (moi yêu cầu, chốt design)
-  ② Specs     → /opsx:propose                 (sinh proposal+design+specs+tasks)
-  ③ Implement → spec-loop                     (tự code→review→fix tới khi match)
-  ④ Archive   → /opsx:archive                 (gộp specs, đóng change)
+🗺️  SPEC-DRIVEN PIPELINE  (2 phases, human review in between)
+  ① Plan & Specify → /my-goal "<goal>"     (clarify → specs + ADR → STOP for review)
+        ⤷ uses grill-me / /opsx:explore / /opsx:propose
+  — 👁  human reviews & approves specs + ADRs —
+  ② Build          → /implement-specs       (spec-loop: code→review→fix tới khi match)
+        ⤷ implements via the recommended experts, then quality gate
+  ③ Archive        → /opsx:archive          (gộp specs, đóng change)
+  ④ Context        → auto-ghi memory         (logic + why cho session sau)
 ```
 
 ## 3. Tell them the single next action
-One line: the exact command to run next given the detected stage. If at Stage 0, suggest `/my-goal "<điều bạn muốn>"` to run the whole thing, or `/opsx:propose` to just write specs.
+One line: the exact command to run next given the detected stage.
+- Stage 0 → `/my-goal "<điều bạn muốn>"` (lên specs + ADR cho review)
+- Stage 1 (specs đã có, chờ duyệt) → review rồi `/implement-specs`
+- Stage 2 (đang/đã code) → `/implement-specs` để tiếp tục, hoặc `/opsx:archive` nếu tasks đã xong
 
 ## 4. Skill / agent inventory
 List the toolkit, one line each, so they remember what's available:
-- `/my-goal <mô tả>` — nhạc trưởng: tự chạy cả pipeline; mức tự động tùy độ rõ; tự phân tích task → chọn expert skill (nestjs-expert/postgres-pro/react-expert…) để code; cuối cùng tự ghi context (logic + why) vào memory cho session sau
-- `dev-workflows:task-analyzer` — phân tích task (essence/type/scale/tags) → gợi ý expert skill phù hợp
-- `grill-me` — phỏng vấn bạn để chốt plan trước khi code
-- `/opsx:explore` — nghĩ thông một vấn đề mơ hồ/lớn
+- `/my-goal <mô tả>` — **Phase 1**: clarify → specs + ADR → recommend expert → DỪNG cho review (không code)
+- `/implement-specs` — **Phase 2**: sau khi chốt specs/ADR → spec-loop code qua experts → quality gate → archive → ghi memory
+- `grill-me` — phỏng vấn bạn để chốt plan
+- `/opsx:explore` — nghĩ thông vấn đề mơ hồ/lớn
 - `/opsx:propose` — sinh specs + design + tasks từ 1 mô tả
-- `spec-loop` — tự implement→review độc lập→fix tới khi khớp hết specs
-- `/opsx:archive` — đóng change, gộp delta specs vào specs chính
-- `/opsx:sync` — đẩy delta specs vào specs chính (không archive)
-- (hỗ trợ) `dev-workflows:code-verifier` — đối chiếu code vs specs; `dev-workflows:quality-fixer` — sửa lỗi lint/build/test
+- `spec-loop` — tự implement→review độc lập→fix tới khi khớp specs
+- `dev-workflows:task-analyzer` — phân tích task → gợi ý expert skill phù hợp
+- `dev-workflows:technical-designer` — viết ADR / design doc
+- `/opsx:archive` · `/opsx:sync` — đóng change / đẩy delta specs vào specs chính
+- (hỗ trợ) `dev-workflows:code-verifier` — đối chiếu code vs specs; `dev-workflows:quality-fixer` — sửa lint/build/test
 
 Keep the whole output compact — it's a glanceable cheat-sheet, not a tutorial. Then stop.

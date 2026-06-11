@@ -1,14 +1,14 @@
 ---
 name: "my-goal"
-description: Orchestrate the full spec-driven pipeline for a goal — adaptively runs grill-me → /opsx:propose → spec-loop → /opsx:archive, with checkpoints chosen by task clarity
+description: Phase 1 (Plan & Specify) — turn a goal into reviewable specs + ADRs, then stop for review. Does not write code; hand off to /implement-specs once approved.
 category: Workflow
-tags: [workflow, openspec, orchestrator, spec-driven, autonomous]
+tags: [workflow, openspec, planning, specs, adr]
 ---
 
-Invoke the **my-goal** skill to drive the whole spec-driven pipeline for this goal.
+Invoke the **my-goal** skill — Phase 1 of the spec-driven pipeline: planning only.
 
 Goal: $ARGUMENTS
 
-Follow the `my-goal` SKILL.md: resume-check via `openspec list` → rate the goal's clarity (🟢/🟡/🔴) and announce the lane → clarify (grill-me/explore as the lane requires) → `/opsx:propose` → **analyze the task (`dev-workflows:task-analyzer`) and select the tech-expert skills to drive the coding** (discover from available skills; primary + ≤2 supporting) → checkpoint on specs + experts if the lane calls for one → `spec-loop` (implementing via the chosen experts) until specs match → `/opsx:archive` → **auto-record the non-obvious logic decisions to the project auto-memory (MEMORY.md) so other sessions don't re-read code** → report. Clear tasks run hands-off; fuzzy tasks get interrogated first. The user can override the lane or swap experts anytime.
+Follow the `my-goal` SKILL.md: resume-check → rate clarity (🟢/🟡/🔴) and announce the lane → clarify (grill-me/explore as the lane requires) → `/opsx:propose` (proposal + design + delta specs + tasks) → write ADR(s) for the significant decisions → analyze the task and **recommend** (record, don't run) the tech-expert skills for implementation → **STOP and present the review package**. Do NOT write production code. Close by telling the user to run `/implement-specs` once the specs + ADRs are approved.
 
 If no goal is given, behave like `/what-now` (show pipeline status + menu) instead.
