@@ -1,6 +1,6 @@
 ---
 name: implement-specs
-description: PHASE 2 (Build) of the spec-driven pipeline — runs AFTER specs + ADRs are approved. Loads the finalized OpenSpec change, implements it via the recommended tech-expert skills, runs spec-loop (implement → independent review vs specs → fix → repeat until matched), quality gate, archives, and auto-records context to memory. Use when the user says specs/ADRs are final and wants the code built. Triggers on "implement-specs", "/implement-specs", "specs chốt rồi, làm đi", "triển khai specs", "build the approved change".
+description: PHASE 2 (Build) of the spec-driven pipeline — runs AFTER specs + ADRs are approved. Loads the finalized OpenSpec change, implements it via the recommended tech-expert skills, runs spec-loop (implement → independent review vs specs → fix → repeat until matched), quality gate, archives, and auto-records context to memory. Use when the user says specs/ADRs are final and wants the code built. Triggers on "implement-specs", "/implement-specs", "specs are final, build it", "implement the change", "build the approved change".
 ---
 
 # implement-specs — Phase 2: Build the approved change

@@ -1,6 +1,6 @@
 ---
 name: spec-loop
-description: Autonomously implement an OpenSpec change end-to-end — implement → independently review the code against the FINALIZED specs in a fresh sub-agent → fix every gap → repeat until all requirements/scenarios and tasks are satisfied, with NO manual review between cycles. Use when specs are already final and the user wants hands-off "make the code match the specs" execution. Triggers on "spec loop", "spec-loop", "auto apply", "implement until specs match", "làm tới khi match hết specs", "tự làm tới khi xong".
+description: Autonomously implement an OpenSpec change end-to-end — implement → independently review the code against the FINALIZED specs in a fresh sub-agent → fix every gap → repeat until all requirements/scenarios and tasks are satisfied, with NO manual review between cycles. Use when specs are already final and the user wants hands-off "make the code match the specs" execution. Triggers on "spec loop", "spec-loop", "auto apply", "implement until specs match", "keep going until it matches", "finish it autonomously".
 ---
 
 # spec-loop — autonomous implement → review → fix until specs match

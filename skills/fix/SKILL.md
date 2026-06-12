@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Lightweight track for a small bug — diagnose root cause → pick the right tech-expert skill for the affected stack → minimal fix via that expert → verify. No specs, no ADR, no review gate. Auto-escalates to /make-plan if the "small bug" turns out to need design/cross-cutting changes. Use for bugs and small defects, NOT new features. Triggers on "fix", "/fix", "bug", "lỗi", "sửa bug", "broken", "throwing", "not working".
+description: Lightweight track for a small bug — diagnose root cause → pick the right tech-expert skill for the affected stack → minimal fix via that expert → verify. No specs, no ADR, no review gate. Auto-escalates to /make-plan if the "small bug" turns out to need design/cross-cutting changes. Use for bugs and small defects, NOT new features. Triggers on "fix", "/fix", "bug", "fix the bug", "broken", "throwing", "not working".
 ---
 
 # fix — fast track for a small bug

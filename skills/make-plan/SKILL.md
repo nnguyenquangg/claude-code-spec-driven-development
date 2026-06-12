@@ -1,6 +1,6 @@
 ---
 name: make-plan
-description: PHASE 1 (Plan & Specify) of the spec-driven pipeline — takes a plain-language goal and produces reviewable specs + ADRs, then STOPS for human review. Does NOT write production code. Adaptive — how hard it interrogates the user depends on how clear the task is. Resume-aware. Hand off to /implement-specs once the specs/ADRs are approved. Triggers on "make-plan", "/make-plan", "plan this", "spec this out", "lên specs cho cái này".
+description: PHASE 1 (Plan & Specify) of the spec-driven pipeline — takes a plain-language goal and produces reviewable specs + ADRs, then STOPS for human review. Does NOT write production code. Adaptive — how hard it interrogates the user depends on how clear the task is. Resume-aware. Hand off to /implement-specs once the specs/ADRs are approved. Triggers on "make-plan", "/make-plan", "plan this", "spec this out", "write the specs".
 ---
 
 # make-plan — Phase 1: Plan & Specify (stops at review)
@@ -33,8 +33,8 @@ Rate the goal and **announce the rating + lane** before doing anything. Base it 
 | 🟡 **Medium** | known shape, some open decisions (e.g. "add Excel export to P&L report") | a few questions | skip | ADR for each non-trivial choice |
 | 🔴 **Fuzzy / large** | vague or cross-cutting (e.g. "build a tax-reminder system") | grill hard | yes | ADRs for each architectural decision |
 
-- State it plainly: *"Mình xếp 🟡 — hỏi vài câu, propose, viết ADR cho các quyết định chính, rồi dừng cho bạn review."*
-- User can override anytime ("nhẹ thôi" → 🟢; "grill kỹ" → 🔴).
+- State it plainly: *"Rating this 🟡 — I'll ask a few questions, propose, write ADRs for the key decisions, then stop for your review."*
+- User can override anytime ("go light" → 🟢; "grill me hard" → 🔴).
 - When unsure between two lanes, pick the **more cautious** one — planning is cheap, a wrong spec is expensive.
 
 ## Step 2 — Clarify (lane-dependent)
@@ -61,7 +61,7 @@ Do **not** start coding. Present a tight review package and stop:
 - What to review: `proposal.md`, the delta specs, `tasks.md`, and the ADR(s) — with their paths.
 - The recommended experts.
 - Any open question the reviewer must settle.
-- Closing line: **"Specs + ADR sẵn sàng review. Chốt xong thì chạy `/implement-specs` để triển khai (spec-loop sẽ tự code → review → fix tới khi khớp)."**
+- Closing line: **"Specs + ADRs are ready for review. Once approved, run `/implement-specs` to build (spec-loop will code → review → fix until it matches)."**
 
 ## Guardrails
 - Phase 1 only. NEVER write production code in `/make-plan` — that belongs to `/implement-specs`. (Scaffolding the OpenSpec artifacts + ADR docs is expected; application/source code is not.)
