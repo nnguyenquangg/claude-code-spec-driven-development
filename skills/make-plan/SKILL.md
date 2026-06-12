@@ -1,6 +1,6 @@
 ---
 name: make-plan
-description: PHASE 1 (Plan & Specify) of the spec-driven pipeline — takes a plain-language goal and produces reviewable specs + ADRs, then STOPS for human review. Does NOT write production code. Adaptive: how hard it interrogates the user depends on how clear the task is. Resume-aware. Hand off to /implement-specs once the specs/ADRs are approved. Triggers on "make-plan", "/make-plan", "plan this", "spec this out", "lên specs cho cái này".
+description: PHASE 1 (Plan & Specify) of the spec-driven pipeline — takes a plain-language goal and produces reviewable specs + ADRs, then STOPS for human review. Does NOT write production code. Adaptive — how hard it interrogates the user depends on how clear the task is. Resume-aware. Hand off to /implement-specs once the specs/ADRs are approved. Triggers on "make-plan", "/make-plan", "plan this", "spec this out", "lên specs cho cái này".
 ---
 
 # make-plan — Phase 1: Plan & Specify (stops at review)
