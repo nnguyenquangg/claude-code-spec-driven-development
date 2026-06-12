@@ -1,6 +1,6 @@
 # claude-code-spec-driven-development
 
-> **Three commands, not thirty.** Describe the work in plain language; the agent picks the right specialist skills and drives it from spec to verified code.
+> **A few commands, not thirty.** Describe the work in plain language; the agent picks the right specialist skills and drives it from spec to verified code.
 
 A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec](https://github.com/Fission-AI/OpenSpec).
 
@@ -15,7 +15,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 
 A typo or one-liner needs no command — just ask.
 
-**Few commands, the agent picks the rest.** Most toolkits hand you dozens of agents and leave you choosing; here you learn three entry points and each one analyzes the task and invokes the right specialists under the hood — `grill-me`, `task-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier`. Full depth, nothing to memorize.
+**Few commands, the agent picks the rest.** Most toolkits hand you dozens of agents and leave you choosing; here you learn a few entry points and each one analyzes the task and invokes the right specialists under the hood — `grill-me`, `task-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier`. Full depth, nothing to memorize.
 
 ## The pipeline (two phases, human review in between)
 
@@ -58,12 +58,13 @@ Most AI coding loops blur planning and building, so unverified assumptions get w
 
 | Path | What |
 |------|------|
+| `skills/autopilot/` | **Full-auto** — `/make-plan` + `/implement-specs` in one hands-off run, no human gate; AI-reviews the specs, logs assumptions, hands back a review packet; never commits |
 | `skills/make-plan/` | **Phase 1** — clarify → specs + ADRs → recommend experts → STOP for review (no code) |
 | `skills/implement-specs/` | **Phase 2** — load approved specs/ADRs → spec-loop via experts → quality gate → archive → record context |
 | `skills/fix/` | **Bug fast-track** — diagnose root cause → pick the right expert → minimal fix → verify; no specs/ADR/gate; auto-escalates to `/make-plan` if it's bigger than a bug |
 | `skills/spec-loop/` | Autonomous implement → **independent** fresh-subagent review vs FINAL specs → fix → repeat until matched (cap 6) |
 | `skills/what-now/` | Read-only cheat-sheet — "you are here" on the pipeline + next command + skill inventory |
-| `commands/*.md` | Thin slash-command wrappers (`/make-plan`, `/implement-specs`, `/fix`, `/spec-loop`, `/what-now`) |
+| `commands/*.md` | Thin slash-command wrappers (`/autopilot`, `/make-plan`, `/implement-specs`, `/fix`, `/spec-loop`, `/what-now`) |
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
 | `install.sh` | Installs skills/commands into `~/.claude/` + all dependencies |
 
@@ -103,6 +104,7 @@ Then install the dependencies above, and **restart Claude Code** so the new skil
 /make-plan "add Excel export to the P&L report"    # feature — Phase 1: produce specs + ADRs, then stop for review
 # review and approve the specs / ADRs
 /implement-specs                                 # feature — Phase 2: run spec-loop until the code matches the specs
+/autopilot "migrate the export job to a queue"   # busy? plan + build in one hands-off run, then review the packet
 /what-now                                        # show where you are and what to run next
 /spec-loop                                       # run the autonomous implement-until-match loop on the active change
 ```
