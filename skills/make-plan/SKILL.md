@@ -1,9 +1,9 @@
 ---
-name: my-goal
-description: PHASE 1 (Plan & Specify) of the spec-driven pipeline — takes a plain-language goal and produces reviewable specs + ADRs, then STOPS for human review. Does NOT write production code. Adaptive: how hard it interrogates the user depends on how clear the task is. Resume-aware. Hand off to /implement-specs once the specs/ADRs are approved. Triggers on "my-goal", "/my-goal", "plan this", "spec this out", "lên specs cho cái này".
+name: make-plan
+description: PHASE 1 (Plan & Specify) of the spec-driven pipeline — takes a plain-language goal and produces reviewable specs + ADRs, then STOPS for human review. Does NOT write production code. Adaptive: how hard it interrogates the user depends on how clear the task is. Resume-aware. Hand off to /implement-specs once the specs/ADRs are approved. Triggers on "make-plan", "/make-plan", "plan this", "spec this out", "lên specs cho cái này".
 ---
 
-# my-goal — Phase 1: Plan & Specify (stops at review)
+# make-plan — Phase 1: Plan & Specify (stops at review)
 
 The user gives a goal in plain language. You turn it into **reviewable artifacts** — proposal, design, delta specs, tasks, and ADR(s) for the significant decisions — then **STOP and hand them to the user/reviewer**. You do **not** implement production code here; that is `/implement-specs` (Phase 2), which runs after the specs and ADRs are approved.
 
@@ -64,7 +64,7 @@ Do **not** start coding. Present a tight review package and stop:
 - Closing line: **"Specs + ADR sẵn sàng review. Chốt xong thì chạy `/implement-specs` để triển khai (spec-loop sẽ tự code → review → fix tới khi khớp)."**
 
 ## Guardrails
-- Phase 1 only. NEVER write production code in `/my-goal` — that belongs to `/implement-specs`. (Scaffolding the OpenSpec artifacts + ADR docs is expected; application/source code is not.)
+- Phase 1 only. NEVER write production code in `/make-plan` — that belongs to `/implement-specs`. (Scaffolding the OpenSpec artifacts + ADR docs is expected; application/source code is not.)
 - Announce the lane and each phase transition in one line.
 - Honest about open questions — surface ambiguities for the reviewer instead of guessing.
 - Respect the host project's CLAUDE.md conventions.

@@ -5,7 +5,7 @@ description: PHASE 2 (Build) of the spec-driven pipeline — runs AFTER specs + 
 
 # implement-specs — Phase 2: Build the approved change
 
-Runs after `/my-goal` (Phase 1) produced specs + ADRs and a human **approved** them. The invocation itself is the approval signal. This phase turns finalized specs into working code via `spec-loop`, then archives and records context. It does **not** re-do planning or invent requirements — the specs/ADRs are the contract.
+Runs after `/make-plan` (Phase 1) produced specs + ADRs and a human **approved** them. The invocation itself is the approval signal. This phase turns finalized specs into working code via `spec-loop`, then archives and records context. It does **not** re-do planning or invent requirements — the specs/ADRs are the contract.
 
 Sub-skills you compose:
 - `spec-loop` — implement → independent fresh-subagent review vs FINAL specs → fix → repeat until matched (cap 6)
@@ -17,7 +17,7 @@ Sub-skills you compose:
 openspec list --json
 ```
 Resolve the active change (if several, ask which). Then load the **finalized contract**: `proposal.md`, every delta spec, `tasks.md`, the ADR(s) (`docs/adr/*` or the `## Decisions (ADR)` section of `design.md`), and the `## Implementation experts` recommendation. Read `openspec status --change <name> --json` for paths.
-- If no change exists, or specs are clearly still draft/empty → stop and tell the user to run `/my-goal` first.
+- If no change exists, or specs are clearly still draft/empty → stop and tell the user to run `/make-plan` first.
 - If tasks are already partly checked → resume from the unchecked ones (don't redo finished work).
 
 ## Step 1 — Confirm experts
@@ -29,7 +29,7 @@ Invoke `spec-loop` for the change, **telling it which expert skills to implement
 - **Delegate to expert sub-agents (large / parallelisable):** dispatch chunks to those experts (`Agent` tool, `subagent_type` = the expert) and integrate.
 spec-loop loops implement → **independent** fresh-context review against the finalized specs **and the ADR decisions** → fix gaps → repeat (cap 6), then runs the quality gate. The reviewer stays separate from the implementing experts so it never rubber-stamps. Do NOT babysit with check-ins — that's the point.
 
-Honor the ADRs: if implementation reveals an ADR decision is wrong or infeasible, **stop and report** — do not silently deviate. A changed decision means going back to `/my-goal` to update the ADR/specs.
+Honor the ADRs: if implementation reveals an ADR decision is wrong or infeasible, **stop and report** — do not silently deviate. A changed decision means going back to `/make-plan` to update the ADR/specs.
 
 ## Step 3 — Quality gate
 Run the project's checks if present (`npm run lint`, `build`, tests — detect from package.json / CLAUDE.md). Fix red, re-run. Respect host CLAUDE.md (e.g. don't run `tsc`/`prisma` yourself in this workspace). A passing reviewer with a red quality gate is NOT done.

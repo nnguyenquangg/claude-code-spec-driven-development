@@ -1,16 +1,16 @@
 ---
 name: fix
-description: Lightweight track for a small bug — diagnose root cause → pick the right tech-expert skill for the affected stack → minimal fix via that expert → verify. No specs, no ADR, no review gate. Auto-escalates to /my-goal if the "small bug" turns out to need design/cross-cutting changes. Use for bugs and small defects, NOT new features. Triggers on "fix", "/fix", "bug", "lỗi", "sửa bug", "broken", "throwing", "not working".
+description: Lightweight track for a small bug — diagnose root cause → pick the right tech-expert skill for the affected stack → minimal fix via that expert → verify. No specs, no ADR, no review gate. Auto-escalates to /make-plan if the "small bug" turns out to need design/cross-cutting changes. Use for bugs and small defects, NOT new features. Triggers on "fix", "/fix", "bug", "lỗi", "sửa bug", "broken", "throwing", "not working".
 ---
 
 # fix — fast track for a small bug
 
-For a small bug, the full spec pipeline (`/my-goal` → review → `/implement-specs`) is overkill. This skill is the lightweight lane: find the root cause, fix it minimally **using the right domain expert**, verify, done — no OpenSpec change, no ADR, no review gate. It still picks an expert (a bug in NestJS deserves `nestjs-expert`, a slow query deserves `postgres-pro`) so the fix is done well, not just quickly.
+For a small bug, the full spec pipeline (`/make-plan` → review → `/implement-specs`) is overkill. This skill is the lightweight lane: find the root cause, fix it minimally **using the right domain expert**, verify, done — no OpenSpec change, no ADR, no review gate. It still picks an expert (a bug in NestJS deserves `nestjs-expert`, a slow query deserves `postgres-pro`) so the fix is done well, not just quickly.
 
 ## Step 0 — Scope gate (decide the lane fast)
 - **Trivial** (typo, one-liner, obvious mistake) → just fix it directly, skip the ceremony below.
 - **Genuine bug** (something is broken / wrong behavior) → continue with this skill.
-- **Not actually a bug** — needs a design decision, touches many modules, changes a contract, or is really a feature → **STOP, route to `/my-goal`.** Don't fix-and-hope your way through a design change.
+- **Not actually a bug** — needs a design decision, touches many modules, changes a contract, or is really a feature → **STOP, route to `/make-plan`.** Don't fix-and-hope your way through a design change.
 
 ## Step 1 — Diagnose (root cause, not symptom)
 Reproduce and locate the actual cause before touching code. Use the `diagnose` skill (or `dev-workflows:investigator` for a murky one): reproduce → minimise → hypothesise → confirm the faulty line/flow. Don't patch the symptom while the cause lives on.
@@ -26,7 +26,7 @@ Identify the stack of the faulty code (file type, framework, layer — from the 
 Apply the expert either by loading its guidance into context (default) or, for a trickier fix, delegating to it as a sub-agent (`Agent`, `subagent_type`).
 
 ## Step 3 — Minimal fix
-Make the **smallest diff** that fixes the root cause. Don't refactor surrounding code, don't add parallel structures, follow the host CLAUDE.md conventions. If the minimal fix turns out to be large or design-y → go back to Step 0 and escalate to `/my-goal`.
+Make the **smallest diff** that fixes the root cause. Don't refactor surrounding code, don't add parallel structures, follow the host CLAUDE.md conventions. If the minimal fix turns out to be large or design-y → go back to Step 0 and escalate to `/make-plan`.
 
 ## Step 4 — Verify
 - The original repro no longer reproduces.
@@ -40,6 +40,6 @@ If the root cause was **surprising / non-obvious** (a gotcha future-you would re
 One tight summary: bug → root cause → expert used → the fix (file:line) → verification result → (memory note, if written).
 
 ## Guardrails
-- Bugs only. New behavior/feature work belongs to `/my-goal`.
+- Bugs only. New behavior/feature work belongs to `/make-plan`.
 - Root cause over symptom; minimal diff over rewrite.
 - Escalate honestly the moment scope exceeds a bug fix — never silently turn a fix into an unscoped redesign.
