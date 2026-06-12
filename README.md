@@ -1,24 +1,20 @@
 # claude-code-spec-driven-development
 
-A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in plain language and let Claude drive the whole pipeline: clarify → specs → implement-until-it-matches → archive → record context. Built on top of [OpenSpec](https://github.com/Fission-AI/OpenSpec).
+> **Three commands, not thirty.** Describe the work in plain language; the agent picks the right specialist skills and drives it from spec to verified code.
 
-**Two tracks, matched to the work:**
+A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec](https://github.com/Fission-AI/OpenSpec).
 
-- **Feature / non-trivial change → the SDD pipeline** (`/make-plan` → review → `/implement-specs`, below).
-- **Small bug → `/fix`** — a lightweight lane: diagnose root cause → pick the right tech-expert → minimal fix → verify. No specs, no ADR, no review gate. It auto-escalates to `/make-plan` if the bug turns out to need a design change.
-- **Typo / one-liner →** just do it, no skill.
+## What you run
 
-## Philosophy — few commands, the agent picks the rest
+| Command | Use it for | What it does |
+|---------|-----------|--------------|
+| `/fix` | a bug | diagnose root cause → minimal fix → verify (auto-escalates to `/make-plan` if it needs a design change) |
+| `/make-plan` | a feature | clarify → specs + ADRs → **stop for your review** |
+| `/implement-specs` | approved specs | build via `spec-loop` until the code matches the specs |
 
-Most agent toolkits hand you dozens of agents and skills and leave you to figure out which one fits — so you spend more time choosing a tool than doing the work. This toolkit goes the other way: **you only ever learn three entry points.**
+A typo or one-liner needs no command — just ask.
 
-| You type | The agent picks for you |
-|----------|-------------------------|
-| `/fix` | `diagnose`, the right stack expert (`nestjs-expert`, `postgres-pro`, `react-expert`, …) |
-| `/make-plan` | `grill-me`, `/opsx:explore`, `task-analyzer`, `technical-designer`, the right experts |
-| `/implement-specs` | `spec-loop`, the recommended experts, `code-verifier`, `quality-fixer` |
-
-You describe the work in plain language; **routing and expert selection happen automatically** — the entry-point skill analyzes the task and invokes the right specialists under the hood. The dozens of expert skills are still there and still used — you just never have to remember or choose them. Fewer commands to learn, full depth when it runs.
+**Few commands, the agent picks the rest.** Most toolkits hand you dozens of agents and leave you choosing; here you learn three entry points and each one analyzes the task and invokes the right specialists under the hood — `grill-me`, `task-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier`. Full depth, nothing to memorize.
 
 ## The pipeline (two phases, human review in between)
 
