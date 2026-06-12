@@ -15,7 +15,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 
 A typo or one-liner needs no command — just ask.
 
-**Few commands, the agent picks the rest.** Most toolkits hand you dozens of agents and leave you choosing; here you learn a few entry points and each one analyzes the task and invokes the right specialists under the hood — `grill-me`, `task-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier`. Full depth, nothing to memorize.
+Most toolkits hand you dozens of agents and make you choose. Here, each command analyzes the task and invokes the right specialists under the hood — `grill-me`, `task-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier` — so you get full depth with nothing to memorize.
 
 ## The pipeline (two phases, human review in between)
 
@@ -47,26 +47,18 @@ A typo or one-liner needs no command — just ask.
 
 ### Why two phases?
 
-Most AI coding loops blur planning and building, so unverified assumptions get written into code before anyone can catch them. Separating the phases puts a deliberate review gate between *deciding what to build* and *building it*:
+Most AI coding loops blur planning and building, so unverified assumptions get written into code before anyone catches them. The split puts a deliberate **human review gate** between deciding *what* to build (`/make-plan`, no code) and building it (`/implement-specs`) — you approve the specs + ADRs before a line is written. `/make-plan` also calibrates how hard it interrogates you to how clear the request is — light for a well-scoped task, thorough for an ambiguous one — and you can adjust that depth anytime.
 
-- **`/make-plan` plans only.** It produces specs and ADRs but never writes production code — you review and approve the design before a single line is implemented.
-- **`/implement-specs` builds.** Invoking it is the approval signal; it implements strictly against the approved specs and ADRs, then verifies the result against them.
-
-**Adaptive interrogation.** `/make-plan` calibrates how much it questions you to how clear the request is — a well-scoped task gets a light pass, an ambiguous one gets thoroughly interrogated — and you can raise or lower that depth at any time.
+(In a hurry? `/autopilot` runs both phases back-to-back and replaces the human gate with an independent AI review of the specs — see the table above.)
 
 ## What's in this repo
 
 | Path | What |
 |------|------|
-| `skills/autopilot/` | **Full-auto** — `/make-plan` + `/implement-specs` in one hands-off run, no human gate; AI-reviews the specs, logs assumptions, hands back a review packet; never commits |
-| `skills/make-plan/` | **Phase 1** — clarify → specs + ADRs → recommend experts → STOP for review (no code) |
-| `skills/implement-specs/` | **Phase 2** — load approved specs/ADRs → spec-loop via experts → quality gate → archive → record context |
-| `skills/fix/` | **Bug fast-track** — diagnose root cause → pick the right expert → minimal fix → verify; no specs/ADR/gate; auto-escalates to `/make-plan` if it's bigger than a bug |
-| `skills/spec-loop/` | Autonomous implement → **independent** fresh-subagent review vs FINAL specs → fix → repeat until matched (cap 6) |
-| `skills/what-now/` | Read-only cheat-sheet — "you are here" on the pipeline + next command + skill inventory |
-| `commands/*.md` | Thin slash-command wrappers (`/autopilot`, `/make-plan`, `/implement-specs`, `/fix`, `/spec-loop`, `/what-now`) |
+| `skills/` | The skills behind the commands — the four entry points above (`autopilot`, `make-plan`, `implement-specs`, `fix`), plus two helpers they call: `spec-loop` (the implement → independent-review → fix loop, cap 6) and `what-now` (read-only "where am I" cheat-sheet) |
+| `commands/` | Thin slash-command wrappers, one per skill |
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
-| `install.sh` | Installs skills/commands into `~/.claude/` + all dependencies |
+| `install.sh` | Installs the skills/commands into `~/.claude/` + all dependencies |
 
 ## Dependencies (auto-installed by `install.sh`)
 
@@ -100,13 +92,14 @@ Then install the dependencies above, and **restart Claude Code** so the new skil
 ## Usage
 
 ```
-/fix "P&L total ignores refunds"                 # small bug — diagnose, fix via the right expert, verify
-/make-plan "add Excel export to the P&L report"    # feature — Phase 1: produce specs + ADRs, then stop for review
-# review and approve the specs / ADRs
-/implement-specs                                 # feature — Phase 2: run spec-loop until the code matches the specs
-/autopilot "migrate the export job to a queue"   # busy? plan + build in one hands-off run, then review the packet
-/what-now                                        # show where you are and what to run next
-/spec-loop                                       # run the autonomous implement-until-match loop on the active change
+/fix "P&L total ignores refunds"
+
+/make-plan "add Excel export to the P&L report"   # → review the specs + ADRs, then:
+/implement-specs
+
+/autopilot "migrate the export job to a queue"    # both phases in one go, then review the packet
+
+/what-now                                         # lost? this orients you
 ```
 
 ## License
