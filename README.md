@@ -8,6 +8,18 @@ A spec-driven-development (SDD) toolkit for **Claude Code** — state a goal in 
 - **Small bug → `/fix`** — a lightweight lane: diagnose root cause → pick the right tech-expert → minimal fix → verify. No specs, no ADR, no review gate. It auto-escalates to `/make-plan` if the bug turns out to need a design change.
 - **Typo / one-liner →** just do it, no skill.
 
+## Philosophy — few commands, the agent picks the rest
+
+Most agent toolkits hand you dozens of agents and skills and leave you to figure out which one fits — so you spend more time choosing a tool than doing the work. This toolkit goes the other way: **you only ever learn three entry points.**
+
+| You type | The agent picks for you |
+|----------|-------------------------|
+| `/fix` | `diagnose`, the right stack expert (`nestjs-expert`, `postgres-pro`, `react-expert`, …) |
+| `/make-plan` | `grill-me`, `/opsx:explore`, `task-analyzer`, `technical-designer`, the right experts |
+| `/implement-specs` | `spec-loop`, the recommended experts, `code-verifier`, `quality-fixer` |
+
+You describe the work in plain language; **routing and expert selection happen automatically** — the entry-point skill analyzes the task and invokes the right specialists under the hood. The dozens of expert skills are still there and still used — you just never have to remember or choose them. Fewer commands to learn, full depth when it runs.
+
 ## The pipeline (two phases, human review in between)
 
 ```text
