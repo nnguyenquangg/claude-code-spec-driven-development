@@ -8,6 +8,8 @@ This project uses **OpenSpec** (`@fission-ai/openspec`, global; CLI: `openspec`)
 - **`/make-plan "<goal>"` — Phase 1 (Plan & Specify).** Resume-check → rate clarity (🟢 light / 🟡 grill a bit / 🔴 grill hard) → grill-me/`/opsx:explore` → `/opsx:propose` (proposal + design + delta specs + tasks) → write **ADR(s)** for significant decisions → `dev-workflows:task-analyzer` to **recommend** the tech-expert lineup (primary + ≤2 supporting, discovered from available skills) → **STOP for human review. No production code.**
 - **`/implement-specs` — Phase 2 (Build).** After specs + ADRs are approved: load the finalized change + ADRs + recommended experts → `spec-loop` (implement through those experts → independent review vs specs+ADRs → fix → repeat, cap 6) → quality gate → `/opsx:archive` → auto-record the non-obvious logic decisions + why to the project auto-memory so future sessions don't re-read code.
 
+**`/autopilot "<goal>"` — full-auto (no human gate).** When the user is busy and wants the whole thing done, this fuses `/make-plan` + `/implement-specs` into one hands-off run: it plans, **AI-reviews the specs with an independent sub-agent in place of the human gate**, resolves open decisions with sensible defaults while **logging every assumption**, builds via `spec-loop`, runs the quality gate, archives, records memory, and hands back one review packet. It **never commits or push** — changes stay in the working tree for review.
+
 `/what-now` (read-only) prints "you are here" on the two-phase map + the next command + the skill inventory.
 
 **Operating rule — do this without being asked.** When the user states a requirement in plain language ("add X", "fix Y", "build Z"), proactively drive the flow yourself — don't wait for them to say "give me a spec".

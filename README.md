@@ -11,6 +11,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 | `/fix` | a bug | diagnose root cause → minimal fix → verify (auto-escalates to `/make-plan` if it needs a design change) |
 | `/make-plan` | a feature | clarify → specs + ADRs → **stop for your review** |
 | `/implement-specs` | approved specs | build via `spec-loop` until the code matches the specs |
+| `/autopilot` | "I'm busy, do it all" | `/make-plan` + `/implement-specs` in one hands-off run, no review gate — logs its assumptions and hands back one review packet (never commits) |
 
 A typo or one-liner needs no command — just ask.
 
