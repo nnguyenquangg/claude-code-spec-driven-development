@@ -23,7 +23,7 @@ Run **`dev-workflows:task-analyzer`** on the bug (the faulty code + symptom) to 
 - Type error / generics / inference → `fullstack-dev-skills:typescript-pro`
 - Gnarly runtime/stack-trace mystery → `fullstack-dev-skills:debugging-wizard`
 - Failing/missing test → `fullstack-dev-skills:test-master`
-Apply the expert either by loading its guidance into context (default) or, for a trickier fix, delegating to it as a sub-agent (`Agent`, `subagent_type`).
+Apply the expert by **loading its Skill into context via the Skill tool** (default), or for a trickier fix dispatch a **`general-purpose` agent** (`Agent` tool) and tell it to load that expert Skill itself — note `subagent_type` only accepts a real agent type, never a Skill name.
 
 ## Step 3 — Minimal fix
 Make the **smallest diff** that fixes the root cause. Don't refactor surrounding code, don't add parallel structures, follow the host CLAUDE.md conventions. If the minimal fix turns out to be large or design-y → go back to Step 0 and escalate to `/make-plan`.
