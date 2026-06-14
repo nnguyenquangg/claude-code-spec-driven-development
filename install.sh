@@ -20,12 +20,12 @@ place() { # src dst
 }
 
 echo "Installing skills ($MODE):"
-for s in autopilot make-plan implement-specs fix spec-loop what-now; do
+for s in research autopilot make-plan implement-specs fix spec-loop what-now; do
   place "$REPO/skills/$s" "$SKILLS/$s"
 done
 
 echo "Installing commands ($MODE):"
-for c in autopilot make-plan implement-specs fix spec-loop what-now; do
+for c in research autopilot make-plan implement-specs fix spec-loop what-now; do
   place "$REPO/commands/$c.md" "$COMMANDS/$c.md"
 done
 

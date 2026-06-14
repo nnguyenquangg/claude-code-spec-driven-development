@@ -4,6 +4,8 @@
 
 This project uses **OpenSpec** (`@fission-ai/openspec`, global; CLI: `openspec`). Specs live in `openspec/specs/` (approved truth), in-flight work in `openspec/changes/<name>/` (`proposal.md` / `design.md` / `tasks.md` / delta `specs/`), finished work in `openspec/changes/archive/`.
 
+**`/research "<target>"` (optional pre-step).** For an idea or unknown, research it first: it auto-picks tools (web search, codebase search via the `Explore` agent, the right expert skills), then outputs a read-only brief — sources, ideas/options + recommendation, a wireframe, and a step-by-step flow — that feeds `/make-plan`. Writes no production code.
+
 **Two-phase entry point (human review in between).**
 - **`/make-plan "<goal>"` — Phase 1 (Plan & Specify).** Resume-check → rate clarity (🟢 light / 🟡 grill a bit / 🔴 grill hard) → grill-me/`/opsx:explore` → `/opsx:propose` (proposal + design + delta specs + tasks) → write **ADR(s)** for significant decisions → `dev-workflows:task-analyzer` to **recommend** the tech-expert lineup (primary + ≤2 supporting, discovered from available skills) → **STOP for human review. No production code.**
 - **`/implement-specs` — Phase 2 (Build).** After specs + ADRs are approved: load the finalized change + ADRs + recommended experts → `spec-loop` (implement through those experts → independent review vs specs+ADRs → fix → repeat, cap 6) → quality gate → `/opsx:archive` → auto-record the non-obvious logic decisions + why to the project auto-memory so future sessions don't re-read code.

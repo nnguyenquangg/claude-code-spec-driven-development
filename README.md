@@ -8,6 +8,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 
 | Command | Use it for | What it does |
 |---------|-----------|--------------|
+| `/research` | an idea / unknown | investigate via web + codebase, output a brief: sources, options, a wireframe, and a step-by-step flow (feeds `/make-plan`) |
 | `/fix` | a bug | diagnose root cause → minimal fix → verify (auto-escalates to `/make-plan` if it needs a design change) |
 | `/make-plan` | a feature | clarify → specs + ADRs → **stop for your review** |
 | `/implement-specs` | approved specs | build via `spec-loop` until the code matches the specs |
@@ -55,7 +56,7 @@ Most AI coding loops blur planning and building, so unverified assumptions get w
 
 | Path | What |
 |------|------|
-| `skills/` | The skills behind the commands — the four entry points above (`autopilot`, `make-plan`, `implement-specs`, `fix`), plus two helpers they call: `spec-loop` (the implement → independent-review → fix loop, cap 6) and `what-now` (read-only "where am I" cheat-sheet) |
+| `skills/` | The skills behind the commands — the entry points above (`research`, `autopilot`, `make-plan`, `implement-specs`, `fix`), plus two helpers they call: `spec-loop` (the implement → independent-review → fix loop, cap 6) and `what-now` (read-only "where am I" cheat-sheet) |
 | `commands/` | Thin slash-command wrappers, one per skill |
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
 | `install.sh` | Installs the skills/commands into `~/.claude/` + all dependencies |

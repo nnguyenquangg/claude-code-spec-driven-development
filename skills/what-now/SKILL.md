@@ -23,6 +23,7 @@ Render this, marking the current stage with `👉`:
 
 ```
 🗺️  PICK A TRACK BY THE KIND OF WORK
+  • Idea / unknown   → /research     (web + codebase → sources, options, wireframe, flow → then plan)
   • Small bug        → /fix          (diagnose → pick expert → minimal fix → verify)
   • Feature / change → /make-plan …  (the 2-phase SDD pipeline below)
   • "I'm busy, do it all" → /autopilot  (plan + build hands-off, no gate, review the output)
@@ -46,6 +47,7 @@ One line: the exact command to run next given the detected stage.
 
 ## 4. Skill / agent inventory
 List the toolkit, one line each, so they remember what's available:
+- `/research <target>` — investigate (web + codebase), output a brief: sources, options, wireframe, flow; read-only, feeds /make-plan
 - `/fix <bug>` — **lightweight bug track**: diagnose → pick expert → minimal fix → verify; auto-escalates to /make-plan if it turns out big
 - `/make-plan <goal>` — **Phase 1**: clarify → specs + ADR → recommend experts → STOP for review (no code)
 - `/implement-specs` — **Phase 2**: after specs/ADRs are approved → spec-loop builds via experts → quality gate → archive → record memory
