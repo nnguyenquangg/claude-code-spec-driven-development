@@ -1,6 +1,6 @@
 ---
 name: research
-description: Research a target (a feature, product idea, integration, or problem) by auto-selecting the right tools — web search for ideas/precedent, codebase search for existing patterns, expert skills for feasibility — and producing a research brief with sources, ideas/options, a wireframe, and a step-by-step flow. Read-only: produces a brief, writes no production code. Feeds into /make-plan. Triggers on "research", "/research", "research my target", "look into", "explore options for", "find ideas for", "how do others do X".
+description: Research a target (a feature, product idea, integration, or problem) by auto-selecting the right tools — web search for ideas/precedent, codebase search for existing patterns, expert skills for feasibility — and producing a research brief with sources, ideas/options, a wireframe, and a step-by-step flow. Read-only — produces a brief, writes no production code. Feeds into /make-plan. Triggers on "research", "/research", "research my target", "look into", "explore options for", "find ideas for", "how do others do X".
 ---
 
 # research — investigate a target, output a brief (sources · ideas · wireframe · flow)
