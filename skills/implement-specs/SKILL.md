@@ -12,7 +12,10 @@ Sub-skills you compose:
 - the **recommended expert skills** from the change (e.g. `fullstack-dev-skills:nestjs-expert`, `:postgres-pro`, `nextjs-developer`, `:typescript-pro`)
 - `openspec-archive-change` / `/opsx:archive` — fold deltas into `openspec/specs/`
 
-## Step 0 — Locate & load the change
+## Step 0 — Read the project CLAUDE.md, then locate & load the change
+**Always read the project's `CLAUDE.md` first** (the root one, and any nested `CLAUDE.md` in the directories you'll touch) before writing any code — it is the source of truth for this repo's conventions, flow, commands, and do/don't rules (e.g. enums-not-strings, `orgId` scoping, "don't run tsc/prisma yourself"). Everything spec-loop implements must follow it. If it conflicts with a spec, surface the conflict instead of silently picking one.
+
+Then locate the change:
 ```bash
 openspec list --json
 ```
