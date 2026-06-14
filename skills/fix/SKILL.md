@@ -16,7 +16,7 @@ For a small bug, the full spec pipeline (`/make-plan` → review → `/implement
 Reproduce and locate the actual cause before touching code. Use the `diagnose` skill (or `dev-workflows:investigator` for a murky one): reproduce → minimise → hypothesise → confirm the faulty line/flow. Don't patch the symptom while the cause lives on.
 
 ## Step 2 — Pick the expert for the fix (lightweight)
-Identify the stack of the faulty code (file type, framework, layer — from the file itself + host CLAUDE.md / package.json), then pick **one primary expert** that actually exists in this environment, plus at most **one supporting** expert if the bug spans two areas. State the pick in one line. Never name an unavailable skill.
+Run **`dev-workflows:task-analyzer`** on the bug (the faulty code + symptom) to get its type/tags, then map that — plus the stack of the faulty code (file type, framework, layer — from the file itself + host CLAUDE.md / package.json) — to **one primary expert** that actually exists in this environment, plus at most **one supporting** expert if the bug spans two areas. State the pick in one line. Never name an unavailable skill.
 - NestJS / API / DI bug → `fullstack-dev-skills:nestjs-expert`
 - Next.js / RSC / route bug → `fullstack-dev-skills:nextjs-developer` (or `:react-expert` for component/render bugs)
 - Slow / wrong SQL, migration, index → `fullstack-dev-skills:postgres-pro` (or `:database-optimizer`)

@@ -16,7 +16,7 @@ Restate what's being researched in one line and classify it so you know which to
 Most targets mix two of these — cover the relevant ones.
 
 ## Step 1 — Choose the tools (define them up front, then run)
-State which tools you'll use and why (one line), then run them. Pick from what's available in this environment:
+First run **`dev-workflows:task-analyzer`** on the target to extract its essence / type / tags, then map those to the tools and experts below. State which tools you'll use and why (one line), then run them. Pick from what's available in this environment:
 
 | Source | Tool | Use for |
 |--------|------|---------|
