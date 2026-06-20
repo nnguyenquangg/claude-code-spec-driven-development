@@ -9,6 +9,6 @@ Invoke the **make-plan** skill — Phase 1 of the spec-driven pipeline: planning
 
 Goal: $ARGUMENTS
 
-Follow the `make-plan` SKILL.md: resume-check → rate clarity (🟢/🟡/🔴) and announce the lane → clarify (grill-me/explore as the lane requires) → `/opsx:propose` (proposal + design + delta specs + tasks) → write ADR(s) for the significant decisions → analyze the task and **recommend** (record, don't run) the tech-expert skills for implementation → **STOP and present the review package**. Do NOT write production code. Close by telling the user to run `/implement-specs` once the specs + ADRs are approved.
+Follow the `make-plan` SKILL.md: resume-check → rate clarity (🟢/🟡/🔴) and announce the lane → clarify (grill-me/explore as the lane requires) → `/opsx:propose` (proposal + design + delta specs + tasks) → write ADR(s) for the significant decisions → **code-review the existing code the change will touch** (`dev-workflows:code-reviewer` / `code-reviewer` skill if available) and fold its findings into the plan as `## Existing-code risks` + ADRs + cleanup tasks → analyze the task and **recommend** (record, don't run) the tech-expert skills for implementation → **STOP and present the review package**. Do NOT write production code. Close by telling the user to run `/implement-specs` once the specs + ADRs are approved.
 
 If no goal is given, behave like `/what-now` (show pipeline status + menu) instead.

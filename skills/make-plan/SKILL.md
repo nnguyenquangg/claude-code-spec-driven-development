@@ -50,13 +50,18 @@ For each architectural / cross-cutting / hard-to-reverse decision the change mak
 - Location: if the repo already uses `docs/adr/`, add `docs/adr/NNNN-<slug>.md` there; otherwise capture them in a **`## Decisions (ADR)`** section of the change's `design.md`.
 - Scope by lane (table above). Don't manufacture ADRs for trivial 🟢 changes — a one-line note in design.md is enough.
 
-## Step 5 — Recommend the implementation experts (record, don't run)
+## Step 5 — Review the existing code the change will touch (find issues up front)
+Before locking the plan, **code-review the existing code in the area this change will modify or build on** — so the specs/ADRs account for real bugs, tech-debt, risky coupling, and reusable pieces instead of discovering them mid-build. Use the `dev-workflows:code-reviewer` agent or the `fullstack-dev-skills:code-reviewer` / built-in `code-review` skill, whichever is present (skip only if there's genuinely no existing code to touch — a greenfield area). Point it at the relevant files (find them via `Grep`/`Explore`) and the project `CLAUDE.md`.
+- Fold its findings into the plan: a **`## Existing-code risks`** section in `proposal.md` (or `design.md`), an ADR if a finding forces a design decision, and concrete cleanup items in `tasks.md` when they're in scope.
+- Do **not** fix code here (this is still Phase 1, no production code) — record the issues so the reviewer sees them and `/implement-specs` handles them.
+
+## Step 6 — Recommend the implementation experts (record, don't run)
 Analyze the task (`dev-workflows:task-analyzer`: essence/type/scale/tags) + the stack (host CLAUDE.md / `package.json` / `prisma` / file types), then **recommend** the tech-expert skills that `/implement-specs` should use to code — so the reviewer sees them too.
 - Discover from skills **actually present** in this environment (e.g. `fullstack-dev-skills:nestjs-expert`, `:postgres-pro`, `:react-expert`, `:typescript-pro`, `nextjs-developer`, `:test-master`). Never name an unavailable skill.
 - Pick a **primary** + 0–2 **supporting** (≤3 total), one line of reasoning each.
 - **Write the recommendation into the change** (a `## Implementation experts` note in `design.md` or `tasks.md`) so `/implement-specs` can pick it up.
 
-## Step 6 — STOP for review (the hand-off)
+## Step 7 — STOP for review (the hand-off)
 Do **not** start coding. Present a tight review package and stop:
 - What to review: `proposal.md`, the delta specs, `tasks.md`, and the ADR(s) — with their paths.
 - The recommended experts.
