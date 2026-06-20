@@ -28,16 +28,37 @@ Apply the expert by **loading its Skill into context via the Skill tool** (defau
 ## Step 3 — Minimal fix
 Make the **smallest diff** that fixes the root cause. Don't refactor surrounding code, don't add parallel structures, follow the host CLAUDE.md conventions. If the minimal fix turns out to be large or design-y → go back to Step 0 and escalate to `/make-plan`.
 
+## Step 3b — Remove code the fix orphaned
+A fix that replaces or bypasses old logic often leaves **dead code behind** — helpers nobody calls now, branches made unreachable, imports/constants/config reads with no consumer left (PR #206: removing the trial special-case orphaned `_is_free_trial_event`, `_has_any_trial_event`, and the `trial_preferred_floor`/`trial_service_ids` reads — deleted in the same PR). Don't leave that rot.
+- From the diff, list what the fix **stopped calling / made unreachable / replaced**. For each suspect, `grep -rn` the whole repo for remaining references; **zero real consumers → dead → remove it**.
+- **Scope to what THIS fix orphaned** — not a repo-wide dead-code hunt. A pre-existing unused symbol unrelated to the fix is out of scope (mention, don't delete).
+- Cascade: each deletion can orphan more (an import, a constant only that fn read) — re-check until nothing new turns up.
+- **Do NOT delete** symbols that are dynamically referenced (reflection, DI, decorators/registries, string dispatch, Odoo model/field names in XML/views, ORM columns), public/exported API, framework/lifecycle hooks, or anything in config/i18n/templates. When unsure it's dynamically used → **keep it and ask**, don't guess-delete.
+- Behavior-preserving only: if removing something would change behavior, it wasn't dead.
+
 ## Step 4 — Verify
 - The original repro no longer reproduces.
 - Lint/build the touched area (respect host CLAUDE.md — e.g. don't run `tsc`/`prisma` yourself in this workspace; leave to the user/CI).
 - Add a cheap regression test if one is quick and the bug warrants it (use `test-master` if helpful).
+- **If the bug has a visible/interactive UI surface, reproduce it in the live app** — don't declare it fixed from code alone. The user keeps the app logged in in Arc; drive it via `~/.local/bin/browser-harness` (full path — `~/.local/bin` is NOT on the non-interactive `$PATH`). Confirm the exact repro steps now produce the correct behavior:
+  ```bash
+  ~/.local/bin/browser-harness <<'PY'
+  new_tab("http://localhost:3000/<path-that-triggered-the-bug>")   # first nav = new_tab, never goto_url
+  wait_for_load()
+  # reproduce the bug's steps: read state with js("..."), act with click_at_xy() / js("el.click()")
+  capture_screenshot("~/web-proofs/fix-<bug>/after.png", max_dim=1600)
+  print(page_info())
+  PY
+  ```
+  Read the screenshot back and confirm the symptom is gone. Capture a `before.png` first (on the unfixed state) when an A/B proof is worth keeping.
+  - **React/Next.js inputs** (DynaTax): setting `el.value` does NOT update React state — use the native setter + dispatch `input`: `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el, v); el.dispatchEvent(new Event('input',{bubbles:true}))`.
+  - Login wall / logged-out → STOP and ask the user to log in; never type credentials.
 
 ## Step 5 — Record only if non-obvious
 If the root cause was **surprising / non-obvious** (a gotcha future-you would re-discover the hard way), write ONE short `project` memory note (cause + why + the fix), dedupe against existing notes, add the `MEMORY.md` pointer. For a routine bug, **skip** — don't spam memory.
 
 ## Step 6 — Report
-One tight summary: bug → root cause → expert used → the fix (file:line) → verification result → (memory note, if written).
+One tight summary: bug → root cause → expert used → the fix (file:line) → dead code removed (symbols the fix orphaned, file:line) + any candidates kept and why → verification result (for a UI bug, link the proof screenshot under `~/web-proofs/fix-<bug>/`) → (memory note, if written).
 
 ## Guardrails
 - Bugs only. New behavior/feature work belongs to `/make-plan`.
