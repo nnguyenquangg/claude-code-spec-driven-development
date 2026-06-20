@@ -30,7 +30,7 @@ Use the experts recommended in the change. If none were recorded, do a quick `de
 Invoke `spec-loop` for the change, **telling it which expert skills to implement as**. Two application modes — pick per task size:
 - **Load guidance (default, small/medium):** invoke the expert skill(s) via the Skill tool so their patterns are in context, then implement following them + the ADRs + the host CLAUDE.md.
 - **Parallel build (large / disjoint surfaces):** the `Agent` tool's `subagent_type` must be a **real agent type** (`general-purpose`, `Explore`, …) — it is **NOT** a Skill, so passing an expert's name (e.g. `fullstack-dev-skills:nestjs-expert`) silently no-ops. Instead dispatch one **`general-purpose` agent per disjoint file-set** and instruct each agent to (a) **load the relevant expert Skill itself via the Skill tool**, (b) read the project `CLAUDE.md` + the specs, then (c) build **only its assigned, non-overlapping files**. Lock any shared contract (a component/interface both depend on) **before** dispatching, so parallel agents code against it. Integrate the results.
-spec-loop loops implement → **independent** fresh-context review against the finalized specs **and the ADR decisions** → fix gaps → repeat (cap 6), then runs the quality gate. The reviewer stays separate from the implementing experts so it never rubber-stamps. Do NOT babysit with check-ins — that's the point.
+spec-loop loops implement → **independent** fresh-context review against the finalized specs **and the ADR decisions** → fix gaps → repeat (cap 6), then runs the quality gate. The review includes **browser verification** (spec-loop step 2b): any requirement with a visible/interactive UI is exercised in the user's logged-in browser via `browser-harness` — screenshot + interact → judge the live behavior against the scenario, not just the code. The reviewer stays separate from the implementing experts so it never rubber-stamps. Do NOT babysit with check-ins — that's the point.
 
 Honor the ADRs: if implementation reveals an ADR decision is wrong or infeasible, **stop and report** — do not silently deviate. A changed decision means going back to `/make-plan` to update the ADR/specs.
 
@@ -48,7 +48,7 @@ Record the **non-obvious** outcome to the project auto-memory (`<project>/memory
 - If stopped early, record what's done, what's left, and the blocker so the next session resumes.
 
 ## Step 6 — Report
-Tight summary: change → experts used → specs satisfied (and where) → ADRs honored → quality gate result → archived → memory note written (filename).
+Tight summary: change → experts used → specs satisfied (and where) → ADRs honored → dead code pruned (symbols the change orphaned) → quality gate result → archived → memory note written (filename).
 
 ## Guardrails
 - The specs + ADRs are the contract: implement exactly them, no scope creep, no guessing on ambiguity (stop and ask).

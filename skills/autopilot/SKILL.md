@@ -23,7 +23,7 @@ Do `/make-plan`'s planning work, but **do not stop**:
 Before writing any production code, spawn an **independent fresh-context sub-agent** (`dev-workflows:code-verifier` or `general-purpose`) to sanity-check the plan. Give it the request, the proposal/specs/ADRs, and the Assumptions list. Ask it to flag, as STRICT findings: contradictions, missing requirements implied by the request, assumptions that are risky/likely-wrong, and anything that would make the build go sideways. Apply its fixes. Only proceed once it has no blocking findings. This is the safety net for the missing human review.
 
 ## Step 4 — Build (hands-off)
-**Read the project's `CLAUDE.md` first** (root + any nested one in the directories you'll touch) — it is the source of truth for this repo's conventions, flow, and do/don't rules; everything you implement must follow it. Then run `spec-loop` for the change, implementing **as the chosen experts** — load each expert's Skill into context via the Skill tool, or for larger/parallel work dispatch a **`general-purpose` agent per disjoint file-set** that loads the expert Skill itself (the `Agent` tool's `subagent_type` is a real agent type like `general-purpose`, **never** a Skill name; lock shared contracts before parallelising). spec-loop loops implement → independent review vs the finalized specs + ADRs + CLAUDE.md → fix → repeat (cap 6). Then run the project's quality gate (lint/build/test as available; respect host CLAUDE.md — e.g. don't run `tsc`/`prisma` yourself here).
+**Read the project's `CLAUDE.md` first** (root + any nested one in the directories you'll touch) — it is the source of truth for this repo's conventions, flow, and do/don't rules; everything you implement must follow it. Then run `spec-loop` for the change, implementing **as the chosen experts** — load each expert's Skill into context via the Skill tool, or for larger/parallel work dispatch a **`general-purpose` agent per disjoint file-set** that loads the expert Skill itself (the `Agent` tool's `subagent_type` is a real agent type like `general-purpose`, **never** a Skill name; lock shared contracts before parallelising). spec-loop loops implement → independent review vs the finalized specs + ADRs + CLAUDE.md → fix → repeat (cap 6); its review includes **browser verification** (step 2b) — UI-affecting requirements are exercised in the user's logged-in browser via `browser-harness` (screenshot + interact → judge live behavior), with proof shots saved under `~/web-proofs/<change>/`. Then run the project's quality gate (lint/build/test as available; respect host CLAUDE.md — e.g. don't run `tsc`/`prisma` yourself here).
 
 ## Step 5 — Archive & record memory
 When spec-loop reports success and quality is green, run `/opsx:archive`, then record the non-obvious logic + why to the project memory (`memory/` + `MEMORY.md`), deduping as usual.
@@ -34,6 +34,8 @@ Stop and present a single, skimmable packet for when the user returns:
 🎯 Goal
 ⚠️  Assumptions I made (please confirm) — each with why + how to change it
 ✅ Specs satisfied (and where)
+📸 UI proof — screenshots per UI requirement (paths under ~/web-proofs/<change>/), if any
+🧹 Dead code pruned — symbols the change orphaned (file:line); candidates kept + why
 🧰 Experts used
 📁 Files changed (tight summary, not a full diff)
 🟢 Quality gate: lint / build / test results
