@@ -56,7 +56,7 @@ List the toolkit, one line each, so they remember what's available:
 - `/opsx:explore` — think through a fuzzy/large problem
 - `/opsx:propose` — generate specs + design + tasks from one description
 - `spec-loop` — autonomously implement → independent review → fix until specs match
-- `dev-workflows:task-analyzer` — analyze a task → suggest the right expert skills
+- `dev-workflows:requirement-analyzer` — gather scope/cost evidence for a task (you pick the expert skills from it)
 - `dev-workflows:technical-designer` — write ADRs / design docs
 - `/opsx:archive` · `/opsx:sync` — close the change / fold delta specs into the main specs
 - (support) `dev-workflows:code-verifier` — code vs specs; `dev-workflows:quality-fixer` — fix lint/build/test

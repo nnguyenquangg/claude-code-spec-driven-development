@@ -24,7 +24,7 @@ Resolve the active change (if several, ask which). Then load the **finalized con
 - If tasks are already partly checked → resume from the unchecked ones (don't redo finished work).
 
 ## Step 1 — Confirm experts
-Use the experts recommended in the change. If none were recorded, do a quick `dev-workflows:task-analyzer` pass to pick a primary + ≤2 supporting from the skills available in this environment. Announce them in one line.
+Use the experts recommended in the change. If none were recorded, do a quick `dev-workflows:requirement-analyzer` pass (scope/cost evidence) and pick a primary + ≤2 supporting yourself from the skills available in this environment. Announce them in one line.
 
 ## Step 2 — Implement via spec-loop (hands-off)
 Invoke `spec-loop` for the change, **telling it which expert skills to implement as**. Two application modes — pick per task size:

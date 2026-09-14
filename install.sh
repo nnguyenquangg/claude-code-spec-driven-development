@@ -52,14 +52,14 @@ else
   echo "  ✗ npx not found — run: npx skills add mattpocock/skills --skill=grill-me -y -g"
 fi
 
-# 3) Claude Code plugin packs — dev-workflows (task-analyzer, code-verifier, quality-fixer)
+# 3) Claude Code plugin packs — dev-workflows (requirement-analyzer, code-verifier, quality-fixer)
 #    and fullstack-dev-skills (nestjs-expert, postgres-pro, react-expert, … = Step-4 experts)
 if command -v claude >/dev/null 2>&1; then
   installed() { claude plugin list 2>/dev/null | grep -q "$1"; }
   add_plugin() { # marketplace-source  plugin@marketplace  label
     local src="$1" plugin="$2" label="$3"
     if installed "$label"; then echo "  ✓ $label already installed"; return; fi
-    echo "  → adding marketplace $src and installing $plugin…"
+    echo "  → adding marketplace $src and installing $plugin ..."
     claude plugin marketplace add "$src" >/dev/null 2>&1 || true
     claude plugin install "$plugin" --scope user >/dev/null 2>&1 \
       && echo "  ✓ $label installed" || echo "  ✗ $label failed — run: claude plugin marketplace add $src && claude plugin install $plugin"
