@@ -36,29 +36,31 @@ A fix that replaces or bypasses old logic often leaves **dead code behind** — 
 - **Do NOT delete** symbols that are dynamically referenced (reflection, DI, decorators/registries, string dispatch, Odoo model/field names in XML/views, ORM columns), public/exported API, framework/lifecycle hooks, or anything in config/i18n/templates. When unsure it's dynamically used → **keep it and ask**, don't guess-delete.
 - Behavior-preserving only: if removing something would change behavior, it wasn't dead.
 
-## Step 4 — Verify
-- The original repro no longer reproduces.
-- Lint/build the touched area (respect host CLAUDE.md — e.g. don't run `tsc`/`prisma` yourself in this workspace; leave to the user/CI).
-- Add a cheap regression test if one is quick and the bug warrants it (use `test-master` if helpful).
-- **If the bug has a visible/interactive UI surface, reproduce it in the live app** — don't declare it fixed from code alone. The user keeps the app logged in in Arc; drive it via `~/.local/bin/browser-harness` (full path — `~/.local/bin` is NOT on the non-interactive `$PATH`). Confirm the exact repro steps now produce the correct behavior:
-  ```bash
-  ~/.local/bin/browser-harness <<'PY'
-  new_tab("http://localhost:3000/<path-that-triggered-the-bug>")   # first nav = new_tab, never goto_url
-  wait_for_load()
-  # reproduce the bug's steps: read state with js("..."), act with click_at_xy() / js("el.click()")
-  capture_screenshot("~/web-proofs/fix-<bug>/after.png", max_dim=1600)
-  print(page_info())
-  PY
-  ```
-  Read the screenshot back and confirm the symptom is gone. Capture a `before.png` first (on the unfixed state) when an A/B proof is worth keeping.
-  - **React/Next.js inputs** (DynaTax): setting `el.value` does NOT update React state — use the native setter + dispatch `input`: `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el, v); el.dispatchEvent(new Event('input',{bubbles:true}))`.
-  - Login wall / logged-out → STOP and ask the user to log in; never type credentials.
+## Step 4 — Verify, in order
+Run this checklist in order — fix red at any step before moving to the next. Cover more than the exact repro when it's cheap (a couple of related inputs/cases), not just the one failing example.
+
+1. **E2e tests, if the touched area has any** — run them first. Fix red, re-run.
+2. **Unit tests** — run the touched area's tests; add a cheap regression test for this bug if one is quick and it warrants it (use `test-master` if helpful). Fix red, re-run.
+3. **Backend/API bug — call the API directly.** Hit the endpoint yourself (curl/httpie/the project's API client) with the original repro input **and** a couple of nearby cases (boundary value, the other branch of whatever condition was wrong) — don't rely on the automated tests alone to prove the fix.
+4. **UI-visible bug — reproduce it in the live app, then screenshot.** Don't declare it fixed from code alone. The user keeps the app logged in in Arc; drive it via `~/.local/bin/browser-harness` (full path — `~/.local/bin` is NOT on the non-interactive `$PATH`). Confirm the exact repro steps now produce the correct behavior:
+   ```bash
+   ~/.local/bin/browser-harness <<'PY'
+   new_tab("http://localhost:3000/<path-that-triggered-the-bug>")   # first nav = new_tab, never goto_url
+   wait_for_load()
+   # reproduce the bug's steps: read state with js("..."), act with click_at_xy() / js("el.click()")
+   capture_screenshot("<project-root>/screenshots/fix-<bug>/after.png", max_dim=1600)
+   print(page_info())
+   PY
+   ```
+   Create `screenshots/` under the project root if missing, and add it to the project's `.gitignore` if it isn't already ignored — these are local proof artifacts, never committed. **Read the screenshot back and confirm the symptom is gone** — a captured-but-unread screenshot is not verification. Capture a `before.png` first (on the unfixed state) when an A/B proof is worth keeping. Only once the screenshot has actually been reviewed and looks right does the fix count as verified.
+   - **React/Next.js inputs** (DynaTax): setting `el.value` does NOT update React state — use the native setter + dispatch `input`: `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el, v); el.dispatchEvent(new Event('input',{bubbles:true}))`.
+   - Login wall / logged-out → STOP and ask the user to log in; never type credentials.
 
 ## Step 5 — Record only if non-obvious
 If the root cause was **surprising / non-obvious** (a gotcha future-you would re-discover the hard way), write ONE short `project` memory note (cause + why + the fix), dedupe against existing notes, add the `MEMORY.md` pointer. For a routine bug, **skip** — don't spam memory.
 
 ## Step 6 — Report
-One tight summary: bug → root cause → expert used → the fix (file:line) → dead code removed (symbols the fix orphaned, file:line) + any candidates kept and why → verification result (for a UI bug, link the proof screenshot under `~/web-proofs/fix-<bug>/`) → (memory note, if written).
+One tight summary: bug → root cause → expert used → the fix (file:line) → dead code removed (symbols the fix orphaned, file:line) + any candidates kept and why → verification result (for a UI bug, link the proof screenshot under `screenshots/fix-<bug>/`) → (memory note, if written).
 
 ## Guardrails
 - Bugs only. New behavior/feature work belongs to `/make-plan`.
