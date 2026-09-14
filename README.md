@@ -16,7 +16,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 
 A typo or one-liner needs no command — just ask.
 
-Most toolkits hand you dozens of agents and make you choose. Here, each command analyzes the task and invokes the right specialists under the hood — `grill-me`, `task-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier` — so you get full depth with nothing to memorize.
+Most toolkits hand you dozens of agents and make you choose. Here, each command analyzes the task and invokes the right specialists under the hood — `grill-me`, `requirement-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier` — so you get full depth with nothing to memorize.
 
 ## The pipeline (two phases, human review in between)
 
@@ -69,7 +69,7 @@ Most AI coding loops blur planning and building, so unverified assumptions get w
 |------------|--------|---------|----------------|
 | **OpenSpec CLI** | npm `@fission-ai/openspec` | Steps 3/7 (propose/archive) | `npm install -g @fission-ai/openspec@latest` |
 | **grill-me** skill | [@mattpocock](https://github.com/mattpocock/skills) (MIT) | Step 2 (clarify) | `npx skills add mattpocock/skills --skill=grill-me -y -g` |
-| **dev-workflows** plugin | gh `shinpr/claude-code-workflows` | Step 4/6 (`task-analyzer`, `code-verifier`, `quality-fixer`) | `claude plugin marketplace add shinpr/claude-code-workflows && claude plugin install dev-workflows@claude-code-workflows` |
+| **dev-workflows** plugin | gh `shinpr/claude-code-workflows` | Step 4/6 (`requirement-analyzer`, `code-verifier`, `quality-fixer`) | `claude plugin marketplace add shinpr/claude-code-workflows && claude plugin install dev-workflows@claude-code-workflows` |
 | **fullstack-dev-skills** plugin | gh `jeffallan/claude-skills` | Step 4 experts (`nestjs-expert`, `postgres-pro`, `react-expert`, `typescript-pro`, …) | `claude plugin marketplace add jeffallan/claude-skills && claude plugin install fullstack-dev-skills@fullstack-dev-skills` |
 
 After install, run `openspec init --tools claude` in each project. `make-plan` only ever picks experts that are actually present in your environment, so the two plugin packs are recommended but not strictly required.
