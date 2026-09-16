@@ -8,6 +8,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 
 | Command | Use it for | What it does |
 |---------|-----------|--------------|
+| `/task-analyzer` | not sure which track fits | sizes up the task, then either hands back the analysis or drives the matched track itself — no need to pick the others yourself |
 | `/research` | an idea / unknown | investigate via web + codebase, output a brief: sources, options, a wireframe, and a step-by-step flow (feeds `/make-plan`) |
 | `/fix` | a bug | diagnose root cause → minimal fix → verify (auto-escalates to `/make-plan` if it needs a design change) |
 | `/make-plan` | a feature | clarify → specs + ADRs → **stop for your review** |
@@ -16,7 +17,7 @@ A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec]
 
 A typo or one-liner needs no command — just ask.
 
-Most toolkits hand you dozens of agents and make you choose. Here, each command analyzes the task and invokes the right specialists under the hood — `grill-me`, `requirement-analyzer`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier` — so you get full depth with nothing to memorize.
+Most toolkits hand you dozens of agents and make you choose. Here, `task-analyzer` sizes up the task and picks the track for you if you don't already know it, then each command analyzes further and invokes the right specialists under the hood — `grill-me`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `code-verifier` — so you get full depth with nothing to memorize.
 
 ## The pipeline (two phases, human review in between)
 
@@ -56,7 +57,7 @@ Most AI coding loops blur planning and building, so unverified assumptions get w
 
 | Path | What |
 |------|------|
-| `skills/` | The skills behind the commands — the entry points above (`research`, `autopilot`, `make-plan`, `implement-specs`, `fix`), plus two helpers they call: `spec-loop` (the implement → independent-review → fix loop, cap 6) and `what-now` (read-only "where am I" cheat-sheet) |
+| `skills/` | The skills behind the commands — the entry points above (`task-analyzer`, `research`, `autopilot`, `make-plan`, `implement-specs`, `fix`), plus two helpers they call: `spec-loop` (the implement → independent-review → fix loop, cap 6) and `what-now` (read-only "where am I" cheat-sheet) |
 | `commands/` | Thin slash-command wrappers, one per skill |
 | `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
 | `install.sh` | Installs the skills/commands into `~/.claude/` + all dependencies |
@@ -69,7 +70,7 @@ Most AI coding loops blur planning and building, so unverified assumptions get w
 |------------|--------|---------|----------------|
 | **OpenSpec CLI** | npm `@fission-ai/openspec` | Steps 3/7 (propose/archive) | `npm install -g @fission-ai/openspec@latest` |
 | **grill-me** skill | [@mattpocock](https://github.com/mattpocock/skills) (MIT) | Step 2 (clarify) | `npx skills add mattpocock/skills --skill=grill-me -y -g` |
-| **dev-workflows** plugin | gh `shinpr/claude-code-workflows` | Step 4/6 (`requirement-analyzer`, `code-verifier`, `quality-fixer`) | `claude plugin marketplace add shinpr/claude-code-workflows && claude plugin install dev-workflows@claude-code-workflows` |
+| **dev-workflows** plugin | gh `shinpr/claude-code-workflows` | Step 4/6 (`code-verifier`, `code-reviewer`, `technical-designer`, `quality-fixer`) | `claude plugin marketplace add shinpr/claude-code-workflows && claude plugin install dev-workflows@claude-code-workflows` |
 | **fullstack-dev-skills** plugin | gh `jeffallan/claude-skills` | Step 4 experts (`nestjs-expert`, `postgres-pro`, `react-expert`, `typescript-pro`, …) | `claude plugin marketplace add jeffallan/claude-skills && claude plugin install fullstack-dev-skills@fullstack-dev-skills` |
 
 After install, run `openspec init --tools claude` in each project. `make-plan` only ever picks experts that are actually present in your environment, so the two plugin packs are recommended but not strictly required.
@@ -93,6 +94,9 @@ Then install the dependencies above, and **restart Claude Code** so the new skil
 ## Usage
 
 ```
+/task-analyzer "the export button sometimes shows the wrong total"   # not sure which track? start here
+                                                                       # → sizes it up, then drives /fix itself
+
 /fix "P&L total ignores refunds"
 
 /make-plan "add Excel export to the P&L report"   # → review the specs + ADRs, then:
