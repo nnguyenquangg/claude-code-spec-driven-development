@@ -17,7 +17,7 @@ Do `/make-plan`'s planning work, but **do not stop**:
 - Scaffold the change and generate `proposal.md` / `design.md` / `tasks.md` / delta specs (`/opsx:propose`).
 - Resolve open design decisions yourself by picking the **most sensible, lowest-risk default** (prefer existing codebase patterns, conventions in CLAUDE.md, and reversible choices). Record **every** such decision in an **Assumptions** list (what you assumed + why + how to change it).
 - Write ADR(s) for the significant/architectural decisions.
-- Analyze the task (`dev-workflows:requirement-analyzer` for scope/cost evidence — request signals, execution route, reuse) and pick the implementation experts yourself from that evidence (primary + ≤2 supporting, from skills available here); Structural Scale and expert choice are your judgment call now, not the agent's.
+- Analyze the task: if `task-analyzer` already dispatched here, reuse its essence/type/scale/tags/expert output; otherwise run `task-analyzer`'s Steps 1-4 yourself now, then pick the implementation experts from that (primary + ≤2 supporting, from skills available here).
 
 ## Step 3 — AI review gate (replaces the human gate — REQUIRED)
 Before writing any production code, spawn an **independent fresh-context sub-agent** (`dev-workflows:code-verifier` or `general-purpose`) to sanity-check the plan. Give it the request, the proposal/specs/ADRs, and the Assumptions list. Ask it to flag, as STRICT findings: contradictions, missing requirements implied by the request, assumptions that are risky/likely-wrong, and anything that would make the build go sideways. Apply its fixes. Only proceed once it has no blocking findings. This is the safety net for the missing human review.

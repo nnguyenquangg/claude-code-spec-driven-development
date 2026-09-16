@@ -13,7 +13,7 @@ Sub-skills you compose (Skill tool or slash command):
 - `grill-me` — interview the user to firm up an unclear plan
 - `openspec-explore` / `/opsx:explore` — think through a fuzzy/large problem
 - `openspec-propose` / `/opsx:propose` — generate proposal + design + delta specs + tasks
-- `dev-workflows:requirement-analyzer` / `dev-workflows:technical-designer` — gather scope/cost evidence and author ADRs / Design Docs
+- `task-analyzer` / `dev-workflows:technical-designer` — size up the task and author ADRs / Design Docs
 
 ## Step 0 — Resume check (always first)
 ```bash
@@ -56,7 +56,7 @@ Before locking the plan, **code-review the existing code in the area this change
 - Do **not** fix code here (this is still Phase 1, no production code) — record the issues so the reviewer sees them and `/implement-specs` handles them.
 
 ## Step 6 — Recommend the implementation experts (record, don't run)
-Analyze the task (`dev-workflows:requirement-analyzer`: scope/cost evidence, execution route, reuse) + the stack (host CLAUDE.md / `package.json` / `prisma` / file types), then **recommend** the tech-expert skills that `/implement-specs` should use to code — so the reviewer sees them too. Structural Scale and the expert pick are your call from that evidence, not the agent's.
+Analyze the task — reuse `task-analyzer`'s output if it dispatched here, otherwise run its Steps 1-4 now (essence, type, scale, tags) — plus the stack (host CLAUDE.md / `package.json` / `prisma` / file types), then **recommend** the tech-expert skills that `/implement-specs` should use to code — so the reviewer sees them too.
 - Discover from skills **actually present** in this environment (e.g. `fullstack-dev-skills:nestjs-expert`, `:postgres-pro`, `:react-expert`, `:typescript-pro`, `nextjs-developer`, `:test-master`). Never name an unavailable skill.
 - Pick a **primary** + 0–2 **supporting** (≤3 total), one line of reasoning each.
 - **Write the recommendation into the change** (a `## Implementation experts` note in `design.md` or `tasks.md`) so `/implement-specs` can pick it up.

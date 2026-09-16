@@ -22,7 +22,12 @@ For the active/most-recent change, also peek at `tasks.md` checkbox progress (vi
 Render this, marking the current stage with `👉`:
 
 ```
-🗺️  PICK A TRACK BY THE KIND OF WORK
+🗺️  NOT SURE WHICH TRACK? → /task-analyzer "<task>"
+      Sizes up the task and either hands back the analysis (if you're just
+      asking) or drives the right track itself (if you said to do it) —
+      no need to pick /fix vs /make-plan vs /autopilot yourself.
+
+🗺️  OR PICK A TRACK DIRECTLY BY THE KIND OF WORK
   • Idea / unknown   → /research     (web + codebase → sources, options, wireframe, flow → then plan)
   • Small bug        → /fix          (diagnose → pick expert → minimal fix → verify)
   • Feature / change → /make-plan …  (the 2-phase SDD pipeline below)
@@ -47,6 +52,7 @@ One line: the exact command to run next given the detected stage.
 
 ## 4. Skill / agent inventory
 List the toolkit, one line each, so they remember what's available:
+- `/task-analyzer <task>` — **front door**: sizes up any task, then either hands back the analysis or drives the matched track itself (trivial / fix / make-plan / autopilot); self-contained, no dev-workflows dependency
 - `/research <target>` — investigate (web + codebase), output a brief: sources, options, wireframe, flow; read-only, feeds /make-plan
 - `/fix <bug>` — **lightweight bug track**: diagnose → pick expert → minimal fix → verify; auto-escalates to /make-plan if it turns out big
 - `/make-plan <goal>` — **Phase 1**: clarify → specs + ADR → recommend experts → STOP for review (no code)
@@ -56,7 +62,6 @@ List the toolkit, one line each, so they remember what's available:
 - `/opsx:explore` — think through a fuzzy/large problem
 - `/opsx:propose` — generate specs + design + tasks from one description
 - `spec-loop` — autonomously implement → independent review → fix until specs match
-- `dev-workflows:requirement-analyzer` — gather scope/cost evidence for a task (you pick the expert skills from it)
 - `dev-workflows:technical-designer` — write ADRs / design docs
 - `/opsx:archive` · `/opsx:sync` — close the change / fold delta specs into the main specs
 - (support) `dev-workflows:code-verifier` — code vs specs; `dev-workflows:quality-fixer` — fix lint/build/test
