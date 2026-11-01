@@ -53,11 +53,14 @@ Never weaken, skip or delete a test, or silence a lint/type rule, to get green.
 ## Step 4b — Three reviewers (non-trivial fixes)
 Unless the fix was trivial (one file, no judgement call — the same line task-analyzer draws), launch `diff-reviewer`, `security-reviewer` and `edge-case-reviewer` **in one message** (three Agent calls, parallel) on the full diff of every repo touched; give each the bug, the root cause, the base branch, every repo path and the OpenSpec change name if any. Fix every blocking finding, re-run the checks and the reviewer that failed. Skipping needs a written reason in the report.
 
+## Step 4c — Open the draft PR
+Once the checks are green, the walkthrough is reviewed and the reviewers passed (or the fix was trivial), run the `open-pr` skill: feature branch, one commit, push, draft PR with the root cause, the regression test, the checks run and the walkthrough screenshots. Never merge. A trivial fix the user wanted local, or no remote: stop at the local commit.
+
 ## Step 5 — Record only if non-obvious
 If the root cause was **surprising / non-obvious** (a gotcha future-you would re-discover the hard way), write ONE short `project` memory note (cause + why + the fix), dedupe against existing notes, add the `MEMORY.md` pointer. For a routine bug, **skip** — don't spam memory.
 
 ## Step 6 — Report
-One tight summary: bug → root cause → expert used → the fix (file:line) → dead code removed (symbols the fix orphaned, file:line) + any candidates kept and why → verification result (for a UI bug, the walkthrough's screenshots and review lines) → reviewer verdicts → (memory note, if written).
+One tight summary: bug → root cause → expert used → the fix (file:line) → dead code removed (symbols the fix orphaned, file:line) + any candidates kept and why → verification result (for a UI bug, the walkthrough's screenshots and review lines) → reviewer verdicts → draft PR link → (memory note, if written).
 
 ## Guardrails
 - Bugs only. New behavior/feature work belongs to `/make-plan`.

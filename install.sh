@@ -57,7 +57,7 @@ place() { # src dst
 }
 
 echo "Installing skills ($MODE):"
-for s in task-analyzer research autopilot make-plan implement-specs fix spec-loop what-now diagnose ui-walkthrough; do
+for s in task-analyzer research autopilot make-plan implement-specs fix spec-loop what-now diagnose ui-walkthrough open-pr; do
   place "$REPO/skills/$s" "$SKILLS/$s"
 done
 

@@ -1,123 +1,102 @@
 # claude-code-spec-driven-development
 
-> **A few commands, not thirty.** Describe the work in plain language; the agent picks the right specialist skills and drives it from spec to verified code.
+Claude Code skills, commands and subagents that take a task from plain language to a reviewed,
+verified draft PR. Built on [OpenSpec](https://github.com/Fission-AI/OpenSpec).
 
-A spec-driven-development (SDD) toolkit for **Claude Code**, built on [OpenSpec](https://github.com/Fission-AI/OpenSpec).
+This is the public part of my **harness engineering** setup: the workflow, the rules and the
+reviewers, with nothing tied to one machine or one client. A private personal harness runs on
+top of it (per-project context, hooks, scheduled loops) and is not shared.
 
-## What you run
+## Commands
 
-| Command | Use it for | What it does |
-|---------|-----------|--------------|
-| `/task-analyzer` | not sure which track fits | sizes up the task, then either hands back the analysis or drives the matched track itself — no need to pick the others yourself |
-| `/research` | an idea / unknown | investigate via web + codebase, output a brief: sources, options, a wireframe, and a step-by-step flow (feeds `/make-plan`) |
-| `/fix` | a bug | diagnose root cause → failing test → minimal fix → verify for real → three reviewers when non-trivial (auto-escalates to `/make-plan` if it needs a design change) |
-| `/make-plan` | a feature | clarify → specs + ADRs → **stop for your review** |
-| `/implement-specs` | approved specs | build via `spec-loop` until the code matches the specs |
-| `/autopilot` | "I'm busy, do it all" | `/make-plan` + `/implement-specs` in one hands-off run, an AI gate instead of the human one — logs its assumptions, runs the three reviewers and hands back one review packet (never commits) |
+| Command | For | Does |
+|---|---|---|
+| `/task-analyzer <task>` | any task | sizes it, then runs the right lane below (or just reports, if you only asked) |
+| `/fix <bug>` | a bug | root cause → failing test → minimal fix → verify → reviewers → draft PR |
+| `/make-plan <goal>` | a feature | specs + ADRs, then **stops for your review** |
+| `/implement-specs` | approved specs | builds until the code matches the specs → verify → reviewers → draft PR |
+| `/autopilot <goal>` | "do it all" | plan + build in one run, an AI gate instead of yours, assumptions logged → draft PR |
+| `/research <target>` | an idea | web + codebase brief: options, wireframe, flow |
+| `/what-now` | lost | where you are and what to run next |
 
-A typo or one-liner needs no command — just ask.
-
-Most toolkits hand you dozens of agents and make you choose. Here, `task-analyzer` sizes up the task and picks the track for you if you don't already know it, then each command analyzes further and invokes the right specialists under the hood — `grill-me`, the stack experts (`nestjs-expert`, `postgres-pro`, `react-expert`, …), `spec-loop`, `diagnose`, `ui-walkthrough`, the three reviewers — so you get full depth with nothing to memorize.
-
-## The pipeline (two phases, human review in between)
+## The flow
 
 ```text
-╭─ PHASE 1 · Plan & Specify ──────────────────  /make-plan "<goal>"
-│
-│   0  Resume-check
-│   1  Rate clarity        🟢 light · 🟡 some · 🔴 grill hard
-│   2  Clarify             grill-me / /opsx:explore
-│   3  Propose             /opsx:propose → proposal + design + tasks
-│   4  Write ADR(s)        for the significant decisions
-│   5  Recommend experts   (recorded for Phase 2)
-│   6  STOP                hand specs + ADRs to the reviewer
-╰──────────────────────────────────────────────────────────────
-                     │
-             👁  human reviews & approves specs + ADRs
-                     │
-                     ▼
-╭─ PHASE 2 · Build ───────────────────────────  /implement-specs
-│
-│   0  Load                change + ADRs + recommended experts
-│   1  Confirm experts
-│   2  spec-loop           implement → review → fix → repeat (cap 6)
-│   3  Quality gate        lint / build / test + three parallel reviewers
-│   4  Archive             /opsx:archive
-│   5  Record context      logic + why → memory
-╰──────────────────────────────────────────────────────────────
+task ─► spec (OpenSpec, GIVEN / WHEN / THEN) ─► [your review, unless /autopilot]
+     ─► build: failing test → smallest change → independent spec review → repeat
+     ─► verify: lint · unit · e2e · call the API · ui-walkthrough
+                  └ Playwright clicks through like a user, every write read back over the API,
+                    every screenshot read and logged in review.md
+     ─► review: diff · security · edge-case reviewers, in parallel, blocking findings fixed
+     ─► open-pr: feature branch, commit, DRAFT PR with spec, checks, screenshots, verdicts
 ```
 
-### Why two phases?
+You review and merge the PR. Nothing is ever merged, pushed to the default branch or
+force-pushed for you.
 
-Most AI coding loops blur planning and building, so unverified assumptions get written into code before anyone catches them. The split puts a deliberate **human review gate** between deciding *what* to build (`/make-plan`, no code) and building it (`/implement-specs`) — you approve the specs + ADRs before a line is written. `/make-plan` also calibrates how hard it interrogates you to how clear the request is — light for a well-scoped task, thorough for an ambiguous one — and you can adjust that depth anytime.
+## Rules every lane follows
 
-(In a hurry? `/autopilot` runs both phases back-to-back and replaces the human gate with an independent AI review of the specs — see the table above.)
+- A spec before code for anything beyond a one-file, no-judgement edit.
+- Done means exercised for real, not just green unit tests. UI changes get a walkthrough.
+- Never weaken, skip or delete a test to get green; expected values come from the spec.
+- A change that makes a flag constant or a branch dead removes it end to end.
+- The same failure three times → `diagnose` instead of another patch.
 
-### Rules every lane follows
+## Harness structure
 
-- **A spec for anything non-trivial.** Every change beyond a one-file, no-judgement edit gets an OpenSpec change with GIVEN / WHEN / THEN scenarios before code — in `/fix` and `/autopilot` too. It is the audit trail of what was asked and decided; tests follow its scenarios and the reviewers check the diff against it.
-- **Done means exercised for real.** Checks green *and* the behaviour run for real: the API called, the command run. A UI-visible change gets a `ui-walkthrough`: a throwaway Playwright script clicks through like a user, every write is awaited and read back over the real API, and every screenshot is actually read.
-- **Three reviewers before done.** `diff-reviewer` (does what was asked, project rules, leftovers the change made redundant), `security-reviewer` and `edge-case-reviewer` run in parallel on the full diff of every repo touched. Blocking findings get fixed and the reviewer re-run.
-- **No green by cheating.** Never weaken, skip or delete a test, or silence a lint/type rule. Expected values come from the spec, never recomputed the way the code computes them.
-- **Leave nothing redundant.** When a change makes a flag constant or a branch unreachable, it is removed end to end (contract, producers, consumers, docs, tests), not hard-coded.
-- **Repeated failure → `diagnose`.** The same failure a third time stops the patching: reproduce → minimise → hypothesise → instrument → fix → guard.
+The rules above are generic. What makes an agent good on *your* projects is context: the
+project's vocabulary, its commands, the gotchas of its stack, the client's conventions. A harness
+keeps that context outside the code repos, in layers that Claude Code loads through `@imports`:
 
-## What's in this repo
+```text
+my-harness/
+├── global/                 protocol.md (how to work) · standards.md (what reviewers check)
+├── layers/<tech>/          standards.md · notes.md        e.g. nestjs, postgres, react
+└── clients/<client>/       standards.md · notes.md        their conventions, environments
+    └── projects/<project>/ context.md · glossary.md · standards.md · progress.md
+                            decisions/ · specs/ · index.md (what a session in the repo loads)
+```
 
-| Path | What |
-|------|------|
-| `skills/` | The skills behind the commands — the entry points above (`task-analyzer`, `research`, `autopilot`, `make-plan`, `implement-specs`, `fix`), plus the helpers they call: `spec-loop` (the implement → independent-review → fix loop, cap 6), `diagnose` (disciplined debugging loop), `ui-walkthrough` (browser walkthrough that verifies through the real API, with a Playwright template) and `what-now` (read-only "where am I" cheat-sheet) |
-| `commands/` | Thin slash-command wrappers for the entry points, `spec-loop` and `what-now` |
-| `agents/` | The three read-only reviewer subagents: `diff-reviewer`, `security-reviewer`, `edge-case-reviewer` |
-| `docs/CLAUDE-snippet.md` | Paste-in block for a project's `CLAUDE.md` so Claude defaults to this flow |
-| `install.sh` | Installs the skills, commands and agents into `~/.claude/` + all dependencies |
+`scripts/harness-scaffold.sh` creates it from `harness-template/`. It never overwrites a file and
+never commits anything into your project repos:
 
-## Dependencies (auto-installed by `install.sh`)
+```bash
+scripts/harness-scaffold.sh init    ~/my-harness                    # global protocol + standards
+scripts/harness-scaffold.sh global  ~/my-harness                    # ~/.claude/CLAUDE.md imports it
+scripts/harness-scaffold.sh project ~/my-harness acme/shop nestjs postgres
+scripts/harness-scaffold.sh link    ~/my-harness acme/shop ~/code/shop
+```
 
-`install.sh` installs all of these for you (and is idempotent — skips anything already present). They are **not** vendored into this repo, just installed from their own sources:
+`link` writes a `CLAUDE.local.md` into the repo that imports the project's `index.md`. The file
+is git-ignored through `.git/info/exclude`, so the client's `.gitignore` stays untouched. Claude
+Code asks once to allow the external import. Keep the harness folder private and writable only
+by you: whatever is in it is read as instructions in every session. The imports hold absolute paths: after moving the harness folder, re-run `global` and `link`
+and delete the old lines. Fill in `context.md` and `glossary.md` first. After
+that, every repeated mistake becomes a line at the narrowest level where it is true.
 
-| Dependency | Source | Used by | Manual command |
-|------------|--------|---------|----------------|
-| **OpenSpec CLI** | npm `@fission-ai/openspec` | `/make-plan` propose, `/implement-specs` archive | `npm install -g @fission-ai/openspec@latest` |
-| **grill-me** skill | [@mattpocock](https://github.com/mattpocock/skills) (MIT) | `/make-plan` clarify | `npx skills add mattpocock/skills --skill=grill-me -y -g` |
-| **dev-workflows** plugin | gh `shinpr/claude-code-workflows` | optional helpers (`code-verifier` as spec-loop's reviewer, `technical-designer` for ADRs, `quality-fixer`) | `claude plugin marketplace add shinpr/claude-code-workflows && claude plugin install dev-workflows@claude-code-workflows` |
-| **fullstack-dev-skills** plugin | gh `jeffallan/claude-skills` | implementation experts (`nestjs-expert`, `postgres-pro`, `react-expert`, `typescript-pro`, …) | `claude plugin marketplace add jeffallan/claude-skills && claude plugin install fullstack-dev-skills@fullstack-dev-skills` |
+## What's inside
 
-`ui-walkthrough` needs Playwright in the project under test (`npm i -D playwright @playwright/test && npx playwright install chromium`); it is not installed globally. After install, run `openspec init --tools claude` in each project. `make-plan` only ever picks experts that are actually present in your environment, so the two plugin packs are recommended but not strictly required.
+- `skills/` — the commands above, plus `spec-loop`, `ui-walkthrough` (with a Playwright
+  template), `open-pr` and `diagnose`.
+- `agents/` — `diff-reviewer`, `security-reviewer`, `edge-case-reviewer` (read-only).
+- `harness-template/` + `scripts/harness-scaffold.sh` — the empty harness above.
+- `commands/` — slash-command wrappers. `docs/CLAUDE-snippet.md` — paste into a project's
+  `CLAUDE.md` to make this the default workflow.
 
 ## Install
 
 ```bash
 git clone git@github.com:nnguyenquangg/claude-code-spec-driven-development.git
-cd claude-code-spec-driven-development
-./install.sh          # symlinks into ~/.claude (default) — re-run after pulling updates
-./install.sh --copy   # copy instead of symlink
-./install.sh --force  # also replace a same-named skill/command/agent you installed from elsewhere
+cd claude-code-spec-driven-development && ./install.sh   # symlinks into ~/.claude
 ```
 
-Upgrading a `--copy` install made before this installer kept a manifest: re-run with `--force` once. By default the installer leaves alone any existing skill, command or agent with the same name that it did not put there, and prints `skip`. Then **restart Claude Code** so the new skills, commands and agents appear.
+`--copy` copies instead of linking. `--force` replaces a same-named skill or agent that you
+installed from elsewhere; by default those are skipped. Use `--force` once to upgrade an old
+`--copy` install. The script also installs the OpenSpec CLI, the `grill-me` skill and two
+optional plugin packs of stack experts. Restart Claude Code afterwards.
 
-## Per-project setup
+Per project, run `openspec init --tools claude`. For UI checks, install Playwright in that project
+(`npm i -D playwright @playwright/test`). For draft PRs, the GitHub CLI must be logged in
+(`gh auth login`).
 
-1. `openspec init --tools claude` in the project root.
-2. Paste `docs/CLAUDE-snippet.md` into the project's `CLAUDE.md` so Claude proactively drives the loop.
-
-## Usage
-
-```
-/task-analyzer "the export button sometimes shows the wrong total"   # not sure which track? start here
-                                                                       # → sizes it up, then drives /fix itself
-
-/fix "P&L total ignores refunds"
-
-/make-plan "add Excel export to the P&L report"   # → review the specs + ADRs, then:
-/implement-specs
-
-/autopilot "migrate the export job to a queue"    # both phases in one go, then review the packet
-
-/what-now                                         # lost? this orients you
-```
-
-## License
-
-MIT — covers the skills, commands and agents in this repo. `grill-me`, OpenSpec, and the `dev-workflows` / `fullstack-dev-skills` plugin packs are separate projects under their own licenses.
+MIT licensed. Dependencies keep their own licenses.
