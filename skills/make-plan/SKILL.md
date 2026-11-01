@@ -56,7 +56,7 @@ Before locking the plan, **code-review the existing code in the area this change
 - Do **not** fix code here (this is still Phase 1, no production code) — record the issues so the reviewer sees them and `/implement-specs` handles them.
 
 ## Step 6 — Recommend the implementation experts (record, don't run)
-Analyze the task — reuse `task-analyzer`'s output if it dispatched here, otherwise run its Steps 1-4 now (essence, type, scale, tags) — plus the stack (host CLAUDE.md / `package.json` / `prisma` / file types), then **recommend** the tech-expert skills that `/implement-specs` should use to code — so the reviewer sees them too.
+Analyze the task — reuse `task-analyzer`'s output if it dispatched here, otherwise run its §3 Size (essence, type, scale, tags & experts) now — plus the stack (host CLAUDE.md / `package.json` / ORM schema / file types), then **recommend** the tech-expert skills that `/implement-specs` should use to code — so the reviewer sees them too.
 - Discover from skills **actually present** in this environment (e.g. `fullstack-dev-skills:nestjs-expert`, `:postgres-pro`, `:react-expert`, `:typescript-pro`, `nextjs-developer`, `:test-master`). Never name an unavailable skill.
 - Pick a **primary** + 0–2 **supporting** (≤3 total), one line of reasoning each.
 - **Write the recommendation into the change** (a `## Implementation experts` note in `design.md` or `tasks.md`) so `/implement-specs` can pick it up.

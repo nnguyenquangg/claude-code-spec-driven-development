@@ -29,9 +29,9 @@ Render this, marking the current stage with `👉`:
 
 🗺️  OR PICK A TRACK DIRECTLY BY THE KIND OF WORK
   • Idea / unknown   → /research     (web + codebase → sources, options, wireframe, flow → then plan)
-  • Small bug        → /fix          (diagnose → pick expert → minimal fix → verify)
+  • Small bug        → /fix          (diagnose → failing test → minimal fix → verify for real → reviewers)
   • Feature / change → /make-plan …  (the 2-phase SDD pipeline below)
-  • "I'm busy, do it all" → /autopilot  (plan + build hands-off, no gate, review the output)
+  • "I'm busy, do it all" → /autopilot  (plan + build hands-off, AI gate + three reviewers, review the output)
   • Typo / one-liner → just do it, no skill
 
 🗺️  SPEC-DRIVEN PIPELINE  (for features — 2 phases, review in between)
@@ -39,7 +39,7 @@ Render this, marking the current stage with `👉`:
         ⤷ uses grill-me / /opsx:explore / /opsx:propose
   — 👁  human reviews & approves specs + ADRs —
   ② Build          → /implement-specs       (spec-loop: code → review → fix until matched)
-        ⤷ implements via the recommended experts, then quality gate
+        ⤷ implements via the recommended experts, then quality gate + three reviewers
   ③ Archive        → /opsx:archive          (fold specs in, close the change)
   ④ Context        → auto-record to memory   (logic + why, for the next session)
 ```
@@ -52,18 +52,21 @@ One line: the exact command to run next given the detected stage.
 
 ## 4. Skill / agent inventory
 List the toolkit, one line each, so they remember what's available:
-- `/task-analyzer <task>` — **front door**: sizes up any task, then either hands back the analysis or drives the matched track itself (trivial / fix / make-plan / autopilot); self-contained, no dev-workflows dependency
+- `/task-analyzer <task>` — **front door**: sizes up any task, then either hands back the analysis or drives the matched track itself (direct / fix / make-plan / autopilot / research); never asks "analyze or proceed?"
 - `/research <target>` — investigate (web + codebase), output a brief: sources, options, wireframe, flow; read-only, feeds /make-plan
-- `/fix <bug>` — **lightweight bug track**: diagnose → pick expert → minimal fix → verify; auto-escalates to /make-plan if it turns out big
+- `/fix <bug>` — **lightweight bug track**: diagnose → failing test → minimal fix → verify for real → three reviewers when non-trivial; auto-escalates to /make-plan if it turns out big
 - `/make-plan <goal>` — **Phase 1**: clarify → specs + ADR → recommend experts → STOP for review (no code)
-- `/implement-specs` — **Phase 2**: after specs/ADRs are approved → spec-loop builds via experts → quality gate → archive → record memory
-- `/autopilot <goal>` — **full-auto**: make-plan + implement-specs in one run, no human gate; AI-reviews the specs, logs assumptions, hands back a review packet; never commits
+- `/implement-specs` — **Phase 2**: after specs/ADRs are approved → spec-loop builds via experts → quality gate + three reviewers → archive → record memory
+- `/autopilot <goal>` — **full-auto**: make-plan + implement-specs in one run, no human gate; AI-reviews the specs, runs the three reviewers, logs assumptions, hands back a review packet; never commits
 - `grill-me` — interview the user to lock the plan before coding
 - `/opsx:explore` — think through a fuzzy/large problem
 - `/opsx:propose` — generate specs + design + tasks from one description
 - `spec-loop` — autonomously implement → independent review → fix until specs match
 - `dev-workflows:technical-designer` — write ADRs / design docs
 - `/opsx:archive` · `/opsx:sync` — close the change / fold delta specs into the main specs
-- (support) `dev-workflows:code-verifier` — code vs specs; `dev-workflows:quality-fixer` — fix lint/build/test
+- `diagnose` — disciplined debugging loop (reproduce → minimise → hypothesise → instrument → fix → guard)
+- `ui-walkthrough` — click through the running app like a user, verify every write over the real API, read every screenshot
+- agents `diff-reviewer` · `security-reviewer` · `edge-case-reviewer` — the three parallel reviewers every non-trivial change gets before done
+- (optional) `dev-workflows:code-verifier` — code vs specs; `dev-workflows:quality-fixer` — fix lint/build/test
 
 Keep the whole output compact — it's a glanceable cheat-sheet, not a tutorial. Then stop.

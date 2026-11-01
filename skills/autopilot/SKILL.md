@@ -16,14 +16,19 @@ Rate the request 🟢 clear / 🟡 medium / 🔴 fuzzy (concrete constraints? pr
 Do `/make-plan`'s planning work, but **do not stop**:
 - Scaffold the change and generate `proposal.md` / `design.md` / `tasks.md` / delta specs (`/opsx:propose`).
 - Resolve open design decisions yourself by picking the **most sensible, lowest-risk default** (prefer existing codebase patterns, conventions in CLAUDE.md, and reversible choices). Record **every** such decision in an **Assumptions** list (what you assumed + why + how to change it).
+- Shape the delta specs as **vertical slices**: one requirement per piece of observable behaviour delivered end to end, each with GIVEN / WHEN / THEN scenarios whose expected values come from the request or a worked example, never from how the code will compute them. `tasks.md` follows the requirements in order. A bug fix starts with "reproduce: failing test for <bug>".
 - Write ADR(s) for the significant/architectural decisions.
-- Analyze the task: if `task-analyzer` already dispatched here, reuse its essence/type/scale/tags/expert output; otherwise run `task-analyzer`'s Steps 1-4 yourself now, then pick the implementation experts from that (primary + ≤2 supporting, from skills available here).
+- Analyze the task: if `task-analyzer` already dispatched here, reuse its essence/type/scale/tags/expert output; otherwise run `task-analyzer`'s §3 Size (essence, type, scale, tags & experts) yourself now, then pick the implementation experts from that (primary + ≤2 supporting, from skills available here).
 
 ## Step 3 — AI review gate (replaces the human gate — REQUIRED)
-Before writing any production code, spawn an **independent fresh-context sub-agent** (`dev-workflows:code-verifier` or `general-purpose`) to sanity-check the plan. Give it the request, the proposal/specs/ADRs, and the Assumptions list. Ask it to flag, as STRICT findings: contradictions, missing requirements implied by the request, assumptions that are risky/likely-wrong, and anything that would make the build go sideways. Apply its fixes. Only proceed once it has no blocking findings. This is the safety net for the missing human review.
+Before writing any production code, spawn an **independent fresh-context sub-agent** (`general-purpose`, or a spec/plan-review agent if one is installed) to sanity-check the plan. Give it the request, the proposal/specs/ADRs, and the Assumptions list. Ask it to flag, as STRICT findings: contradictions, missing requirements implied by the request, assumptions that are risky/likely-wrong, and anything that would make the build go sideways. Apply its fixes. Only proceed once it has no blocking findings. This is the safety net for the missing human review.
 
 ## Step 4 — Build (hands-off)
-**Read the project's `CLAUDE.md` first** (root + any nested one in the directories you'll touch) — it is the source of truth for this repo's conventions, flow, and do/don't rules; everything you implement must follow it. Then run `spec-loop` for the change, implementing **as the chosen experts** — load each expert's Skill into context via the Skill tool, or for larger/parallel work dispatch a **`general-purpose` agent per disjoint file-set** that loads the expert Skill itself (the `Agent` tool's `subagent_type` is a real agent type like `general-purpose`, **never** a Skill name; lock shared contracts before parallelising). spec-loop loops implement → **self-verify in order** (step 1b: e2e tests if any → unit tests → API calls for a backend change → browser + screenshot for a UI change) → independent review vs the finalized specs + ADRs + CLAUDE.md → fix → repeat (cap 6); its **browser verification** (step 2b) exercises UI-affecting requirements in the user's logged-in browser via `browser-harness` (screenshot + interact → judge live behavior), with proof shots saved under `<project-root>/screenshots/<change>/` (git-ignored) and actually read back — a captured-but-unread screenshot doesn't count. Then run the project's quality gate (lint/build/test as available; respect host CLAUDE.md — e.g. don't run `tsc`/`prisma` yourself here).
+**Read the project's `CLAUDE.md` first** (root + any nested one in the directories you'll touch) — it is the source of truth for this repo's conventions, flow, and do/don't rules; everything you implement must follow it. Then run `spec-loop` for the change, implementing **as the chosen experts** — load each expert's Skill into context via the Skill tool, or for larger/parallel work dispatch a **`general-purpose` agent per disjoint file-set** that loads the expert Skill itself (the `Agent` tool's `subagent_type` is a real agent type like `general-purpose`, **never** a Skill name; lock shared contracts before parallelising). spec-loop loops implement → **self-verify in order** (step 1b: e2e tests if any → unit tests → API calls for a backend change → `ui-walkthrough` for a UI change) → independent review vs the finalized specs + ADRs + CLAUDE.md → fix → repeat (cap 6); its **UI walkthrough** (step 2b) exercises UI-affecting requirements in a real browser through the real API, each write read back and every screenshot actually read — a captured-but-unread screenshot doesn't count. The same failure a third time → stop patching and run `diagnose`. Then run the project's quality gate (lint/build/test as available; respect any commands the host CLAUDE.md leaves to CI).
+
+## Step 4b — Final walkthrough + three reviewers (REQUIRED)
+- If any requirement is UI-visible, one last `ui-walkthrough` over **every flow the run changed** (not only the last one), every screenshot reviewed; findings are fixed like any red check.
+- The three reviewers already ran at spec-loop's quality gate. If code changed after that (the final walkthrough's fixes), re-run `diff-reviewer`, `security-reviewer` and `edge-case-reviewer` **in one message** (three Agent calls, parallel) on the full diff of every repo touched, now also giving them the Assumptions list. Fix every blocking finding, re-run the checks and the reviewer that failed. Skipping needs a written reason in the packet.
 
 ## Step 5 — Archive & record memory
 When spec-loop reports success and quality is green, run `/opsx:archive`, then record the non-obvious logic + why to the project memory (`memory/` + `MEMORY.md`), deduping as usual.
@@ -34,7 +39,8 @@ Stop and present a single, skimmable packet for when the user returns:
 🎯 Goal
 ⚠️  Assumptions I made (please confirm) — each with why + how to change it
 ✅ Specs satisfied (and where)
-📸 UI proof — screenshots per UI requirement (paths under screenshots/<change>/), if any
+📸 UI proof — walkthrough screenshots + review lines per UI requirement, if any
+🔍 Reviewers — diff / security / edge-case verdicts, findings fixed, minors left
 🧹 Dead code pruned — symbols the change orphaned (file:line); candidates kept + why
 🧰 Experts used
 📁 Files changed (tight summary, not a full diff)
@@ -46,6 +52,7 @@ End with: *"Nothing is committed — review the assumptions above; tell me what'
 ## Guardrails
 - **Never commit or push.** Leave all changes in the working tree for the user to review.
 - Autonomous, but honest: surface assumptions loudly; do not bury a guess. The assumptions log is the user's review surface.
-- Stop mid-run **only** for a true blocker — an irreversible/outward-facing action that needs the user's OK, or a high-blast-radius decision with no safe default. Otherwise keep going.
+- Stop mid-run **only** for a true blocker — an irreversible/outward-facing action that needs the user's OK, a decision or access only the user has, or a high-blast-radius decision with no safe default. A failing test, an unknown error or a hard bug is not a blocker: keep going.
+- Never weaken, skip or delete a test, or silence a lint/type rule, to get green. Stay inside the goal: note other problems in the packet instead of fixing them.
 - If `spec-loop` hits its cap or the AI gate finds an unresolvable conflict, stop and report it in the packet instead of forcing completion.
 - Reuses the same pieces as `/make-plan` + `/implement-specs`; the only difference is no human gate in the middle. For anything truly ambiguous and high-stakes, recommend the user run `/make-plan` (with a real review) next time.

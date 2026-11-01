@@ -9,4 +9,4 @@ Invoke the **spec-loop** skill to autonomously implement the OpenSpec change unt
 
 Change name (optional): $ARGUMENTS
 
-Follow the `spec-loop` SKILL.md exactly: load finalized artifacts → implement → spawn an independent reviewer sub-agent that returns structured gaps → fix gaps → repeat (cap 6 iterations / 2 no-progress) → quality gate → report. Only stop on success, the safety cap, or a genuine spec ambiguity.
+Follow the `spec-loop` SKILL.md exactly: load finalized artifacts → implement → spawn an independent reviewer sub-agent that returns structured gaps → fix gaps → repeat (cap 6 iterations / 2 no-progress) → quality gate + three parallel reviewers (diff, security, edge cases) → report. Only stop on success, the safety cap, or a genuine spec ambiguity.
