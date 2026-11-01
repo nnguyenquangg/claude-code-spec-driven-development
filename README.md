@@ -1,4 +1,4 @@
-# claude-code-spec-driven-development
+# harness-engineering-kit
 
 Claude Code skills, commands and subagents that take a task from plain language to a reviewed,
 verified draft PR. Built on [OpenSpec](https://github.com/Fission-AI/OpenSpec).
@@ -86,8 +86,8 @@ that, every repeated mistake becomes a line at the narrowest level where it is t
 ## Install
 
 ```bash
-git clone git@github.com:nnguyenquangg/claude-code-spec-driven-development.git
-cd claude-code-spec-driven-development && ./install.sh   # symlinks into ~/.claude
+git clone git@github.com:nnguyenquangg/harness-engineering-kit.git
+cd harness-engineering-kit && ./install.sh   # symlinks into ~/.claude
 ```
 
 `--copy` copies instead of linking. `--force` replaces a same-named skill or agent that you
