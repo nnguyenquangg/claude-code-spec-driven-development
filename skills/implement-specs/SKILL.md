@@ -40,6 +40,9 @@ Honor the ADRs: if implementation reveals an ADR decision is wrong or infeasible
 ## Step 4 — Archive
 When spec-loop reports success and quality is green, run `openspec-archive-change` / `/opsx:archive` to fold the delta specs into `openspec/specs/`. If spec-loop hit its cap or an ADR/spec conflict, skip archiving and hand back to the user with the blocker.
 
+## Step 4b — Open the draft PR
+Run the `open-pr` skill: feature branch, one commit for the change, push, draft PR whose body names the change and its ADRs, the checks run, the walkthrough table with screenshots and the reviewer verdicts. Never merge. Skip it (and say so) when spec-loop stopped on a blocker or the user wants it local.
+
 ## Step 5 — Capture session context (AUTOMATIC — do not skip)
 Record the **non-obvious** outcome to the project auto-memory (`<project>/memory/` + `MEMORY.md`), following its rules exactly:
 - Write/update ONE memory file: the **logic decision(s) + why** (link the ADR), affected flow/files at a high level, gotchas. Type `project` (or `feedback` for a working-preference correction). Absolute dates.
@@ -48,7 +51,7 @@ Record the **non-obvious** outcome to the project auto-memory (`<project>/memory
 - If stopped early, record what's done, what's left, and the blocker so the next session resumes.
 
 ## Step 6 — Report
-Tight summary: change → experts used → specs satisfied (and where) → ADRs honored → dead code pruned (symbols the change orphaned) → quality gate result → reviewer verdicts → archived → memory note written (filename).
+Tight summary: change → experts used → specs satisfied (and where) → ADRs honored → dead code pruned (symbols the change orphaned) → quality gate result → reviewer verdicts → archived → draft PR link → memory note written (filename).
 
 ## Guardrails
 - The specs + ADRs are the contract: implement exactly them, no scope creep, no guessing on ambiguity (stop and ask).

@@ -1,6 +1,6 @@
 ---
 name: autopilot
-description: Full-auto end-to-end — fuses /make-plan and /implement-specs into one hands-off run with NO human review gate in the middle. Plans (specs + ADRs), self-reviews them with an independent sub-agent in place of the human gate, makes sensible default assumptions for anything it would normally ask (logging each one), builds via spec-loop through the right experts, runs the quality gate, archives, records memory, and hands back a single review packet. Does NOT commit or push. Use when the user is busy and wants the whole thing done, reviewing only the final output. Triggers on "autopilot", "/autopilot", "do it all", "just build it end to end", "I'm busy, handle it", "full auto".
+description: Full-auto end-to-end — fuses /make-plan and /implement-specs into one hands-off run with NO human review gate in the middle. Plans (specs + ADRs), self-reviews them with an independent sub-agent in place of the human gate, makes sensible default assumptions for anything it would normally ask (logging each one), builds via spec-loop through the right experts, runs the quality gate, archives, records memory, and hands back a single review packet. Ends by committing on a feature branch and opening a draft PR with the verification evidence; never merges, never pushes the default branch. Use when the user is busy and wants the whole thing done, reviewing only the final output. Triggers on "autopilot", "/autopilot", "do it all", "just build it end to end", "I'm busy, handle it", "full auto".
 ---
 
 # autopilot — plan + build, hands-off, review only the output
@@ -33,6 +33,9 @@ Before writing any production code, spawn an **independent fresh-context sub-age
 ## Step 5 — Archive & record memory
 When spec-loop reports success and quality is green, run `/opsx:archive`, then record the non-obvious logic + why to the project memory (`memory/` + `MEMORY.md`), deduping as usual.
 
+## Step 5b — Open the draft PR
+Run the `open-pr` skill: feature branch, one commit, push, draft PR whose body carries the spec, the checks run, the walkthrough table and its screenshots, the reviewer verdicts and the **Assumptions** list. No remote, no `gh` auth, or the user said "local only": stop after the local commit and say so in the packet.
+
 ## Step 6 — Hand back ONE review packet
 Stop and present a single, skimmable packet for when the user returns:
 ```
@@ -46,11 +49,12 @@ Stop and present a single, skimmable packet for when the user returns:
 📁 Files changed (tight summary, not a full diff)
 🟢 Quality gate: lint / build / test results
 📝 Memory note written: <filename>
+🔗 Draft PR: <url> (or why it was not opened)
 ```
-End with: *"Nothing is committed — review the assumptions above; tell me what's wrong and I'll adjust, or say commit when you're happy."*
+End with: *"The draft PR is open for your review — check the assumptions above first; tell me what's wrong and I'll push fixes to the same branch. Merging is yours."*
 
 ## Guardrails
-- **Never commit or push.** Leave all changes in the working tree for the user to review.
+- **Never merge, never push the default branch, never force-push.** The work goes to a feature branch and a draft PR (`open-pr`); the user reviews and merges.
 - Autonomous, but honest: surface assumptions loudly; do not bury a guess. The assumptions log is the user's review surface.
 - Stop mid-run **only** for a true blocker — an irreversible/outward-facing action that needs the user's OK, a decision or access only the user has, or a high-blast-radius decision with no safe default. A failing test, an unknown error or a hard bug is not a blocker: keep going.
 - Never weaken, skip or delete a test, or silence a lint/type rule, to get green. Stay inside the goal: note other problems in the packet instead of fixing them.
