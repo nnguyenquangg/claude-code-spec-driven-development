@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the claude-code-spec-driven-development skills, commands and agents into ~/.claude.
+# Install the harness-engineering-kit skills, commands and agents into ~/.claude.
 # Default: symlink (so `git pull` updates them live). --copy copies instead.
 # An existing skill/command/agent of the same name that this installer did not place is
 # left alone (reported as skip); --force replaces it.
