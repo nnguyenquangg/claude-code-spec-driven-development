@@ -16,7 +16,7 @@ Restate what's being researched in one line and classify it so you know which to
 Most targets mix two of these — cover the relevant ones.
 
 ## Step 1 — Choose the tools (define them up front, then run)
-If `task-analyzer` already dispatched here, reuse its essence/type/scale/tags; otherwise run its Steps 1-4 on the target now, then map that to the tools and experts below. State which tools you'll use and why (one line), then run them. Pick from what's available in this environment:
+If `task-analyzer` already dispatched here, reuse its essence/type/scale/tags; otherwise run its §3 Size (essence, type, scale, tags & experts) on the target now, then map that to the tools and experts below. State which tools you'll use and why (one line), then run them. Pick from what's available in this environment:
 
 | Source | Tool | Use for |
 |--------|------|---------|

@@ -30,9 +30,9 @@ openspec status --change <name> --json
 Read `proposal.md`, `design.md`, `tasks.md`, and every delta spec under the change's `specs/` (use the paths from `status`/`show`, don't assume repo-relative paths). Build a checklist of **every requirement + scenario + unchecked task**. This checklist is the loop's exit condition.
 
 ### 1. Implement
-Implement the pending checklist items directly (Edit/Write). On the first iteration, do the full implementation pass following `tasks.md` in dependency order. On later iterations, implement **only the gaps** the reviewer reported. Check off completed items in `tasks.md`. Follow the host project's CLAUDE.md conventions (enums not raw strings, `orgId` scoping, `jsonResponse`, no `any`, etc.).
+Implement the pending checklist items directly (Edit/Write). On the first iteration, do the full implementation pass following `tasks.md` in dependency order. On later iterations, implement **only the gaps** the reviewer reported. Check off completed items in `tasks.md`. Follow the host project's CLAUDE.md conventions. One unit of work at a time; read code before editing it; no drive-by refactors, renames or reformatting.
 
-**Then prune what the change orphaned.** When an edit replaces or bypasses old logic, remove the code it just made dead — orphaned helpers, unreachable branches, dead imports/constants/config reads, replaced functions. For each suspect from your diff, `grep -rn` the whole repo; **zero real consumers → remove it**, then cascade (each deletion can orphan more) until nothing new turns up. Scope it to what THIS change orphaned, not a repo-wide hunt. **Do NOT delete** dynamically-referenced code (reflection, DI, decorators/registries, string dispatch, Odoo model/field names in XML/views, ORM columns), public/exported API, framework/lifecycle hooks, or config/i18n/template references — when unsure it's dynamically used, keep it and note it. Pruning is behavior-preserving: if removing something would change behavior, it wasn't dead. The quality gate (step 4) catches a wrong removal.
+**Then prune what the change orphaned.** When an edit replaces or bypasses old logic, remove the code it just made dead — orphaned helpers, unreachable branches, dead imports/constants/config reads, replaced functions. For each suspect from your diff, `grep -rn` the whole repo; **zero real consumers → remove it**, then cascade (each deletion can orphan more) until nothing new turns up. Scope it to what THIS change orphaned, not a repo-wide hunt. **Do NOT delete** dynamically-referenced code (reflection, DI, decorators/registries, string dispatch, Odoo model/field names in XML/views, ORM columns), public/exported API, framework/lifecycle hooks, or config/i18n/template references — when unsure it's dynamically used, keep it and note it. Pruning is behavior-preserving: if removing something would change behavior, it wasn't dead. A value the change makes always the same is not a field: when a flag, parameter or column becomes constant, remove it end to end (contract, producer, every consumer, docs, tests) instead of hard-coding it. The quality gate (step 4) catches a wrong removal.
 
 ### 1b. Self-verify, in order — REQUIRED before requesting review
 
@@ -41,7 +41,9 @@ Run this ordered checklist after every implementation pass (not just once) — f
 1. **E2e tests, if the touched area has any** — run them first; they catch integration breakage the fastest feedback loop would miss. Fix red, re-run.
 2. **Unit tests** — run the touched area's unit tests (add a cheap one for the new behavior if none exists and it's quick). Fix red, re-run.
 3. **Backend/API changes — call the API directly.** Don't stop at green automated tests: hit the running endpoint yourself (curl/httpie/the project's API client) for the happy path **and** a few edge cases the spec implies (empty input, not-found, unauthorized, boundary values) — automated tests can pass while the wiring is still wrong end-to-end.
-4. **UI-affecting changes — browser verification with screenshots.** See step 2b below; do this after 1-3 are green, not before — a UI screenshot proves nothing if the underlying logic is still broken.
+4. **UI-affecting changes — browser walkthrough.** See step 2b below; do this after 1-3 are green, not before — a UI screenshot proves nothing if the underlying logic is still broken.
+
+Expected values in tests come from the spec scenarios or a worked example, never recomputed the way the code computes them. Never weaken, skip or delete a test, or silence a lint/type rule, to get green. If the same failure comes back a third time, stop patching and run the `diagnose` skill (reproduce → minimise → hypothesise → instrument → fix → guard).
 
 Cover **more than one case per step** whenever it's cheap — the goal is confidence the change works broadly, not just on the one example in the spec.
 
@@ -62,31 +64,16 @@ Do **not** review your own work inline — you will rubber-stamp it. Spawn a fre
 ```
 Tell the reviewer: report only real spec mismatches (missing requirement, wrong behavior, unhandled scenario, violated constraint) — not style preferences or anything the spec doesn't mandate. Be adversarial; default to listing a gap when unsure rather than passing.
 
-#### 2b. Browser verification (REQUIRED when the change affects visible/interactive UI)
-Static code review is not enough for UI behavior — **exercise the running app**, don't just read the code. Run this only after step 1b's e2e/unit/API checks are green. The user keeps the app **logged in** in their Arc browser; `browser-harness` is installed and attaches to that real session (see its SKILL.md, auto-loaded via `~/.claude/CLAUDE.md`). The reviewer sub-agent (it has `Bash`) runs it directly.
+#### 2b. UI walkthrough (REQUIRED when the change affects visible/interactive UI)
+Static code review is not enough for UI behavior — **exercise the running app**, don't just read the code. Run this only after step 1b's e2e/unit/API checks are green. The **implementer** runs the walkthrough (it has the dev servers and the context); hand the reviewer sub-agent the out dir (`review.md`, `api.log`, screenshots) so it judges the live evidence alongside the code, and treat any FINDING line as a gap.
 
-Screenshots go under **`<project-root>/screenshots/<change>/`** (create it if missing, and add `screenshots/` to the project's `.gitignore` if it isn't already ignored — these are local proof artifacts, never committed). This replaced the old `~/web-proofs/<change>/` convention; use the new project-relative path.
+Apply it when **any requirement/scenario describes user-visible behavior** (a page renders X, clicking Y produces Z, a list filters/sorts, a badge/state shows, a form validates). Skip it only for pure backend/API/types/migration changes with no rendered surface — and say so in `notes`.
 
-**Invoke it by full path** — `~/.local/bin/browser-harness` (and `~/.local/bin/web-proof`). The non-interactive Bash environment does NOT have `~/.local/bin` on `$PATH`, so a bare `browser-harness` fails with command-not-found. Helpers (`new_tab`, `wait_for_load`, `capture_screenshot`, `click_at_xy`, `js`, `page_info`) are pre-imported inside the heredoc; the daemon auto-starts and re-attaches to the running Arc.
+Run the `ui-walkthrough` skill over every UI-affecting scenario: a throwaway Playwright script (from the skill's template, kept outside the repo) reproduces each scenario's **GIVEN/WHEN** like a user, `expect`s its **THEN** on the rendered page, and verifies like QA — each write awaits the page's own API call (2xx) and the stored record is read back over the API; any 4xx/5xx in `api.log` fails the walk. **Read every screenshot back** (Read tool on the PNG) and write one `review.md` line per shot with the exact values seen — a screenshot captured but never looked at is not verification. Cover more than one case when the scenario has variants (different input, role, or empty state).
 
-Apply this pass when **any requirement/scenario describes user-visible behavior** (a page renders X, clicking Y produces Z, a list filters/sorts, a badge/state shows, a form validates). Skip it only for pure backend/API/types/migration changes with no rendered surface — and say so in `notes`.
+Any divergence between what the UI does and what the scenario requires is a **gap** in the same JSON shape — put the screenshot path(s) in `problem` as evidence (e.g. `"problem": "scenario requires the saved filter to persist after reload; the list resets to all rows — see <out>/04-after-reload.png"`). Code that looks correct but renders/behaves wrong still fails.
 
-For each UI-affecting scenario:
-1. Navigate to the page that exercises it:
-   ```bash
-   ~/.local/bin/browser-harness <<'PY'
-   new_tab("http://localhost:3000/<path>")
-   wait_for_load()
-   print(page_info())
-   PY
-   ```
-   Use the project's dev URL (detect from CLAUDE.md / package.json; ask the user once if unknown). First navigation must be `new_tab(url)`, never `goto_url` (it clobbers the user's active tab).
-2. Reproduce the scenario's **GIVEN/WHEN** steps in the live UI — `capture_screenshot("<project-root>/screenshots/<change>/<scenario>-<step>.png", max_dim=1600)` to find targets, `click_at_xy()` / form fills / `js()` to act, re-screenshot after each meaningful action. (Or `~/.local/bin/web-proof <url> <label>` for a quick single shot.) Read DOM state with `js("document.querySelector('…').value/textContent")`; trigger actions with `js("el.click()")` or `click_at_xy()`. **React/Next.js inputs:** `el.value = x` does NOT update React state — use `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el, x); el.dispatchEvent(new Event('input',{bubbles:true}))`.
-3. **Read every screenshot back** (Read tool on the PNG) and judge the **actual rendered behavior** against the scenario's **THEN** (expected outcome) — a screenshot captured but never looked at is not verification. Cover more than one case when the scenario has variants (different input, role, or empty state); one lucky screenshot isn't proof of the general behavior. Only once every captured screenshot has been reviewed and looks correct does the UI requirement count as satisfied.
-
-Any divergence between what the UI does and what the scenario requires is a **gap** in the same JSON shape — put the screenshot path(s) in `problem` as evidence (e.g. `"problem": "spec requires trial tutors keep preferred floor; UI shows 3F forced — see screenshots/<change>/floor-after.png"`). Code that looks correct but renders/behaves wrong still fails.
-
-**Login wall:** if a page redirects to login / shows a logged-out state, STOP and ask the user to log in (they own the session) — never type credentials or read them from screenshots.
+**Login wall:** if no test account is documented, STOP and ask the user — never type real credentials or read them from screenshots.
 
 ### 3. Decide
 - `satisfied === true` and `gaps` empty → go to **Quality gate**.
@@ -94,13 +81,13 @@ Any divergence between what the UI does and what the scenario requires is a **ga
 - If `reviewer.notes` flags a genuine spec ambiguity (the spec is silent/contradictory, not just unimplemented) → **stop and ask the user**. Never invent a requirement to make the reviewer pass.
 
 ### 4. Quality gate
-Step 1b already confirmed e2e + unit tests (and, for backend/UI changes, API + screenshot verification) green for this iteration — this gate re-runs the **full** project suite once more as the final safety net (catches regressions from later iterations), plus whatever step 1b doesn't cover: `npm run lint`, `npm run build`, and any other project check (detect from package.json / CLAUDE.md). Fix anything red, then re-run. (Respect host CLAUDE.md: in this workspace, do NOT run `tsc`/`prisma` yourself — leave those to the user/CI.) A passing reviewer with a red quality gate is NOT done.
+Step 1b already confirmed e2e + unit tests (and, for backend/UI changes, API + screenshot verification) green for this iteration — this gate re-runs the **full** project suite once more as the final safety net (catches regressions from later iterations), plus whatever step 1b doesn't cover: lint, build and any other project check (detect from package.json / CLAUDE.md; if the host CLAUDE.md says some commands are left to CI or the user, respect that). Fix anything red, then re-run. A passing reviewer with a red quality gate is NOT done.
 
-**Code review pass (if available).** In addition to the spec review (which only checks *matches the spec*), run a **code-review** over the changed files to catch bugs / security / quality the spec review won't — use the `dev-workflows:code-reviewer` agent or the `fullstack-dev-skills:code-reviewer` / built-in `code-review` skill, whichever is present (skip if none). Have it check against the project's `CLAUDE.md` conventions (enums-not-strings, `orgId` scoping, `jsonResponse`, no `any`, reuse-first, etc.). Fix every real finding; ignore pure style nits the repo doesn't mandate. Don't exit until its blocking findings are resolved.
+**Three reviewers (REQUIRED).** The spec review only checks *matches the spec*. Once it passes and the checks are green, launch `diff-reviewer`, `security-reviewer` and `edge-case-reviewer` **in one message** (three Agent calls, parallel) on the full diff of every repo touched; give each the change name, the base branch and every repo path. `diff-reviewer` reads the OpenSpec change and the project `CLAUDE.md`, and also hunts leftovers the change made redundant. Fix every blocking finding, re-run the checks and the reviewer that failed; minor findings are fixed or listed in the report. Don't exit until no reviewer has a blocking finding. Skipping needs a written reason in the report.
 
 ### 5. Exit
 Stop when **either**:
-- ✅ reviewer `satisfied` + quality gate green → report success: list each requirement and where it's satisfied (for UI requirements, link the proof screenshot under `screenshots/<change>/`), and the tasks now checked off. Offer `/opsx:archive`.
+- ✅ reviewer `satisfied` + quality gate green → report success: list each requirement and where it's satisfied (for UI requirements, the walkthrough's screenshots and review lines), the three reviewer verdicts, and the tasks now checked off. Offer `/opsx:archive`.
 - 🛑 `iteration > 6` or `noProgress >= 2` → stop and report: the remaining `gaps`, what you tried, and why it isn't converging. Do not loop forever or fake completion.
 
 ## Rules
@@ -108,4 +95,4 @@ Stop when **either**:
 - Honest: never check off a task or claim a spec is met without the independent reviewer confirming it. Report failures plainly.
 - In scope only: implement exactly what the finalized specs say — no scope creep, no guessing on ambiguity.
 - Minimal diff: change only what each gap requires.
-- Verify behavior, not just code: any requirement with a rendered/interactive surface must be confirmed in the live app via browser verification (step 2b), not by reading code alone.
+- Verify behavior, not just code: any requirement with a rendered/interactive surface must be confirmed in the live app via the UI walkthrough (step 2b), not by reading code alone.

@@ -13,7 +13,7 @@ Sub-skills you compose:
 - `openspec-archive-change` / `/opsx:archive` — fold deltas into `openspec/specs/`
 
 ## Step 0 — Read the project CLAUDE.md, then locate & load the change
-**Always read the project's `CLAUDE.md` first** (the root one, and any nested `CLAUDE.md` in the directories you'll touch) before writing any code — it is the source of truth for this repo's conventions, flow, commands, and do/don't rules (e.g. enums-not-strings, `orgId` scoping, "don't run tsc/prisma yourself"). Everything spec-loop implements must follow it. If it conflicts with a spec, surface the conflict instead of silently picking one.
+**Always read the project's `CLAUDE.md` first** (the root one, and any nested `CLAUDE.md` in the directories you'll touch) before writing any code — it is the source of truth for this repo's conventions, flow, commands, and do/don't rules (naming, scoping rules, which commands are left to CI). Everything spec-loop implements must follow it. If it conflicts with a spec, surface the conflict instead of silently picking one.
 
 Then locate the change:
 ```bash
@@ -24,18 +24,18 @@ Resolve the active change (if several, ask which). Then load the **finalized con
 - If tasks are already partly checked → resume from the unchecked ones (don't redo finished work).
 
 ## Step 1 — Confirm experts
-Use the experts recommended in the change. If none were recorded, run `task-analyzer`'s Steps 1-4 and pick a primary + ≤2 supporting yourself from the skills available in this environment. Announce them in one line.
+Use the experts recommended in the change. If none were recorded, run `task-analyzer`'s §3 Size (tags & experts) and pick a primary + ≤2 supporting yourself from the skills available in this environment. Announce them in one line.
 
 ## Step 2 — Implement via spec-loop (hands-off)
 Invoke `spec-loop` for the change, **telling it which expert skills to implement as**. Two application modes — pick per task size:
 - **Load guidance (default, small/medium):** invoke the expert skill(s) via the Skill tool so their patterns are in context, then implement following them + the ADRs + the host CLAUDE.md.
 - **Parallel build (large / disjoint surfaces):** the `Agent` tool's `subagent_type` must be a **real agent type** (`general-purpose`, `Explore`, …) — it is **NOT** a Skill, so passing an expert's name (e.g. `fullstack-dev-skills:nestjs-expert`) silently no-ops. Instead dispatch one **`general-purpose` agent per disjoint file-set** and instruct each agent to (a) **load the relevant expert Skill itself via the Skill tool**, (b) read the project `CLAUDE.md` + the specs, then (c) build **only its assigned, non-overlapping files**. Lock any shared contract (a component/interface both depend on) **before** dispatching, so parallel agents code against it. Integrate the results.
-spec-loop loops implement → **self-verify in order** (spec-loop step 1b: e2e tests if any → unit tests → API calls for a backend change → browser + screenshot for a UI change) → **independent** fresh-context review against the finalized specs **and the ADR decisions** → fix gaps → repeat (cap 6), then runs the quality gate. Browser verification (spec-loop step 2b) exercises any visible/interactive UI requirement in the user's logged-in browser via `browser-harness` — screenshot + interact → judge the live behavior against the scenario, saved under `<project-root>/screenshots/<change>/` (git-ignored) and actually read back before the requirement counts as satisfied. The reviewer stays separate from the implementing experts so it never rubber-stamps. Do NOT babysit with check-ins — that's the point.
+spec-loop loops implement → **self-verify in order** (spec-loop step 1b: e2e tests if any → unit tests → API calls for a backend change → `ui-walkthrough` for a UI change) → **independent** fresh-context review against the finalized specs **and the ADR decisions** → fix gaps → repeat (cap 6), then runs the quality gate. The UI walkthrough (spec-loop step 2b) exercises any visible/interactive UI requirement in a real browser through the real API — each write awaited and read back, every screenshot actually read and reviewed before the requirement counts as satisfied. At its quality gate spec-loop runs the three reviewers (`diff-reviewer`, `security-reviewer`, `edge-case-reviewer`) in parallel on the full diff. The reviewer stays separate from the implementing experts so it never rubber-stamps. Do NOT babysit with check-ins — that's the point.
 
 Honor the ADRs: if implementation reveals an ADR decision is wrong or infeasible, **stop and report** — do not silently deviate. A changed decision means going back to `/make-plan` to update the ADR/specs.
 
 ## Step 3 — Quality gate
-`spec-loop` already ran this gate internally (its step 4) as part of the loop in Step 2 — this is the outer confirmation, not a separate pass. Re-run the project's checks if present (`npm run lint`, `build`, tests — detect from package.json / CLAUDE.md) and fix anything red. Respect host CLAUDE.md (e.g. don't run `tsc`/`prisma` yourself in this workspace). A passing reviewer with a red quality gate is NOT done — and neither is a UI requirement whose screenshots (under `screenshots/<change>/`) were captured but never actually reviewed.
+`spec-loop` already ran this gate internally (its step 4) as part of the loop in Step 2 — this is the outer confirmation, not a separate pass. Re-run the project's checks if present (lint, build, tests — detect from package.json / CLAUDE.md, and respect any commands it leaves to CI) and fix anything red. A passing reviewer with a red quality gate is NOT done — and neither is a UI requirement whose walkthrough screenshots were captured but never actually reviewed, nor a change with an open blocking finding from the three reviewers.
 
 ## Step 4 — Archive
 When spec-loop reports success and quality is green, run `openspec-archive-change` / `/opsx:archive` to fold the delta specs into `openspec/specs/`. If spec-loop hit its cap or an ADR/spec conflict, skip archiving and hand back to the user with the blocker.
@@ -48,7 +48,7 @@ Record the **non-obvious** outcome to the project auto-memory (`<project>/memory
 - If stopped early, record what's done, what's left, and the blocker so the next session resumes.
 
 ## Step 6 — Report
-Tight summary: change → experts used → specs satisfied (and where) → ADRs honored → dead code pruned (symbols the change orphaned) → quality gate result → archived → memory note written (filename).
+Tight summary: change → experts used → specs satisfied (and where) → ADRs honored → dead code pruned (symbols the change orphaned) → quality gate result → reviewer verdicts → archived → memory note written (filename).
 
 ## Guardrails
 - The specs + ADRs are the contract: implement exactly them, no scope creep, no guessing on ambiguity (stop and ask).

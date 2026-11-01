@@ -1,84 +1,102 @@
 ---
 name: task-analyzer
-description: Front door for a raw task — size it up (essence, type, scale, tags), read whether the user's own words mean "just look" or "go do it", then either hand back the analysis or drive the right amount of ceremony itself (trivial fix / the fix lane / the make-plan lane / the autopilot lane). Self-contained — no dev-workflows dependency. Different from /research (which investigates an external topic; this looks at the task itself). Triggers on "task-analyzer", "analyze this task", "how big is this", or any bare requirement with no other command named.
+description: Front door for a raw task - size it up (essence, type, scale, tags), read whether the user's own words mean "just look" or "go do it", then either hand back the analysis or drive the matching lane itself (direct / fix / make-plan / autopilot / research). Different from /research (which investigates an external topic; this looks at the task itself). Triggers on "task-analyzer", "analyze this task", "how big is this", or any bare requirement with no other command named.
 ---
 
-# task-analyzer — size up the task, then do exactly as much as asked
+# task-analyzer: size the task, then do exactly as much as asked
 
-You are often the **first thing invoked** on a new ask, before the user has decided which lane fits. Two jobs, always in this order: (1) analyze the task, (2) read from the user's own words whether they want the analysis or the work done — then act accordingly.
+You are often the first thing invoked on a new ask, before the user has decided which lane
+fits. Two jobs, in this order: size the task, then do exactly as much as the words ask.
 
-## Step 0 — Read intent from the user's own words (decides everything after)
+## 1. Intent, from the user's own words (decides everything after)
+- **Look-only** wording ("look into", "analyze", "what would it take", "how big", "compare"):
+  steps 2–4, print the analysis, stop. Reading only: no edits, no long-running checks, no
+  memory writes. If the ask is really about an external topic rather than the work, point to
+  `/research`.
+- **Do** wording ("do it", "fix", "implement", "build", "ship it"): steps 2–5, no further
+  check-in.
+- **Neither** (a bare description of a problem or a want): treat it as do-wording. The user
+  invoked this skill to hand the task over, so never ask "analyze or proceed?". Questions about
+  the requirement itself belong to `grill-me`; a decision only the user can make still goes to
+  the `make-plan` lane, which stops for review.
+- **A spec is always written** for anything beyond trivial, whatever the wording: an OpenSpec
+  change (proposal + delta specs with GIVEN / WHEN / THEN scenarios) is the audit trail of what
+  was asked and what was decided. With do-wording the spec is written and the build continues;
+  when the user asked for specs first, it is written and stops for review; with look-only
+  wording nothing is written, the analysis only names the spec that would be. No
+  `openspec/` in the project yet: run `openspec init --tools claude` first (it only adds the
+  `openspec/` folder); if the user does not want OpenSpec there, write the same sections
+  (why, scope, GIVEN / WHEN / THEN scenarios, decisions) into the PR description instead.
 
-- **Exploratory wording** ("tìm hiểu thử", "phân tích xem", "research this", "look into", "what would it take", "so sánh xem") → **Analyze-only.** Do Steps 1-4, output the report, **stop**. If the ask is really about an external topic/idea rather than sizing up work, point to `/research` instead.
-- **Action wording** ("làm đi", "triển khai", "implement", "fix this", "build it", "code luôn") → Do Steps 1-4, then **Step 5: act** — drive the work yourself through the matched lane, no further check-in.
-- **Neither is clear** (a bare description of a problem or a want, no verb telling you which) → do Steps 1-4, present the recommended lane, and ask **one short question**: analyze only, or proceed? This is the one fork worth asking about — guessing wrong either wastes their time (asked again) or does an unwanted build (expensive to undo).
+## 2. Orient
+- `openspec list --json`: a change already in flight for this goal means the task is a
+  continuation; resume it (`/implement-specs`) instead of starting over.
+- Read the project's `CLAUDE.md` (root + any nested one where the work lands) and project
+  memory for anything relevant: vocabulary, conventions, gotchas, architecture decisions.
+- Locate the code the task touches (`Grep` / `Glob` / the `Explore` agent): the scale is
+  counted, not guessed.
+- Do-mode only: run the project's fast checks (lint / unit tests as the project defines them).
+  Red before you touched anything makes "baseline green" the first unit of work.
 
-## Step 1 — Understand the essence
+## 3. Size
+- **Essence**: the fundamental purpose behind the wording. "broken / throwing / not working"
+  is a fix (a defined wrong behaviour); "add / implement / build" is an implementation;
+  "refactor / clean up / extract" is behaviour-preserving; "why / how does X work" is
+  understanding, not yet a change; an architecture choice is design.
+- **Type**: fix | implementation | refactoring | design | quality | understanding.
+- **Scale** by files actually touched: trivial: at most one file and no judgement call; small: 1–2
+  files, one function or component, with a judgement call or a test to write; medium 3–5 with some open decisions; large 6+, cross-cutting, or
+  touching a contract, schema or public API. A change that spans more than one repo, or touches
+  a contract or API shape, is never trivial or small.
+- **Tags & experts**: tags from the request and the touched code's stack (file types,
+  framework, layer). Pick a primary expert skill + 0–2 supporting from the skills actually
+  installed here, one line of reasoning each; never name one that is not present.
 
-Map the request to its fundamental purpose, not the surface wording:
-
-| Surface wording | Fundamental purpose |
-|---|---|
-| "fix this" / "broken" / "throwing" | Problem solving, root cause analysis |
-| "add" / "implement" / "build" | Feature addition, value delivery |
-| "refactor" / "clean up" / "extract" | Quality improvement, maintainability |
-| "update" / "bump" / "rename" | Change management, consistency |
-| "why does X" / "how does X work" | Understanding, not yet a change |
-
-If nothing matches, state the fundamental purpose explicitly in your own words before continuing.
-
-## Step 2 — Classify type & estimate scale
-
-| Type | Characteristics |
-|---|---|
-| Fix | Something that should work doesn't; a defined wrong behavior |
-| Implementation | New code, new capability, nothing broken |
-| Refactoring | Behavior-preserving structural change |
-| Design | An architecture/approach decision, not yet code |
-| Quality | Tests, review, hardening on existing behavior |
-
-| Scale | File count | Indicators |
-|---|---|---|
-| Trivial | 0-1 | Typo, one-liner, no judgment call |
-| Small | 1-2 | Single function/component, no design decision |
-| Medium | 3-5 | Multiple related components, some open decisions |
-| Large | 6+ | Cross-cutting, architecture impact, contract/schema change |
-
-Ground the estimate in the actual codebase (`Grep`/`Glob`/`Explore`) — don't guess file count from the request text alone when a quick look can confirm it.
-
-## Step 3 — Pick the lane (matters only in do-mode)
-
+## 4. Lane
 | Situation | Lane |
 |---|---|
-| Trivial | Just do it directly — no ceremony, no other skill |
-| Small/medium bug or well-scoped tweak, no real design decision | **`fix`** lane: diagnose → pick expert → minimal fix → ordered verify (e2e → unit → API → UI+screenshot) → memory only if non-obvious → report |
-| Medium/large feature or change with open decisions, but they're resolvable with sensible low-risk defaults (or the user said "busy", "do it all", "no need to review each step") | **`autopilot`** lane: plan (specs+ADRs), AI review gate, build via `spec-loop`, quality gate, archive, memory, one review packet — never commits |
-| Decisions only the user should make (irreversible, ambiguous business rule, large blast radius), or the user explicitly asked for a plan/spec first | **`make-plan`** lane: stop for human review before any code |
-| The ask is itself unscoped — an idea, not yet a task | **`research`** first, then re-run this analysis on its recommendation |
+| Trivial | **direct**: edit, run the project's checks, exercise it once for real |
+| Small or medium defect, no design decision | **`fix`**: `diagnose` for the cause, failing test first, smallest change, verify for real, reviewers when non-trivial |
+| Medium or large change whose open decisions have conservative defaults, or the user said "busy", "do it all" | **`autopilot`**: specs + AI review gate + build, assumptions logged |
+| A decision only the user can make (irreversible, business rule, large blast radius), or the user asked for a plan/spec first | **`make-plan`**: specs + ADRs, stop for review |
+| The ask is itself unscoped (an idea, not yet a task) | **`research`** first, then re-run this analysis on its recommendation |
 
-When two lanes look plausible, pick the more cautious one and say why in one line.
+Two lanes plausible: take the more cautious one and say why in one line.
 
-## Step 4 — Tag & recommend expert(s)
+Print exactly this block (look-only stops here):
+```
+## Task analysis
+Essence: <one line>
+Type: <fix|implementation|refactoring|design|quality|understanding>
+Scale: <trivial|small|medium|large> (~N files: <paths>)
+Repos / contracts touched: <one repo, none | list>
+In-flight change: <none | openspec change name>
+Lane: <direct|fix|make-plan|autopilot|research> — <why, one line>
+Spec: <trivial, none | will be written: openspec/changes/<name> | exists: <name>>
+Expert(s): <primary> (+ <supporting>) — <why, one line>
+```
 
-Extract tags from the request + the touched code's stack (file type, framework, layer — from the file itself, `package.json`, `prisma`, host `CLAUDE.md`). Discover experts from skills **actually present** in this environment (list what's available; never name one that isn't installed). Pick a primary + 0-2 supporting, one line of reasoning each.
-
-## Step 5 — Act
-
-- **Analyze-only** → output exactly this, then stop:
-  ```
-  ## Task analysis
-  Essence: <one line>
-  Type: <fix|implementation|refactoring|design|quality>
-  Scale: <trivial|small|medium|large> (~N files)
-  Tags: <tag, tag, ...>
-  Recommended lane: <trivial|fix|make-plan|autopilot|research> — <why, one line>
-  Recommended expert(s): <primary> (+ <supporting>) — <why, one line>
-  ```
-- **Do-mode** → before touching code, read the project's `CLAUDE.md` (root + any nested one in the directories you'll touch) and check project memory (`memory/` + `MEMORY.md`) for anything relevant to this task. Then **follow the matched lane's own SKILL.md end-to-end as if the user had invoked it directly** (`fix`, `autopilot`, or `make-plan`), passing it this step's essence/type/scale/tags/expert output so it doesn't redo that analysis. That lane's own guardrails still apply in full — picking the `make-plan` lane still means **stop for review, no production code**, even though you got there via `task-analyzer`.
+## 5. Act (do-mode)
+- **Review comment** (the task is a reviewer's note on an open PR/MR): before editing, trace
+  what the requested change makes redundant across every repo it touches: a value that becomes
+  constant, a branch that can no longer run, a field nobody reads. Remove those end to end in
+  the same round (contract, producer, every consumer, docs, tests) and say so in the reply,
+  rather than applying the words literally and waiting for the next comment.
+- **Follow the lane's own SKILL.md end to end** (`fix`, `autopilot`, `make-plan`, `research`)
+  as if the user had invoked it, passing this analysis so it is not redone. That lane's
+  guardrails apply in full: `make-plan` still stops for review with no production code.
+- **Review step is not optional**: anything beyond trivial, review-fix rounds included, ends
+  with the three reviewers run in parallel (one message, three Agent calls): `diff-reviewer`
+  (task/spec, project rules, leftovers), `security-reviewer`, `edge-case-reviewer`, on the full
+  diff of every repo touched, each given the task, the base branch, every repo path and the
+  OpenSpec change name. Blocking findings are fixed and the failing reviewer re-run. Skipping
+  needs a written reason in the final report.
+- **Done** means the project's checks pass and the behaviour was exercised for real (a request,
+  a command, the page), not only unit tests. A UI-visible change also gets a `ui-walkthrough`.
 
 ## Guardrails
-
-- One command, adaptive depth — the user should not have to know in advance whether this is a `/fix`-sized or `/autopilot`-sized ask.
-- Ask exactly once, only at the Step 0 fork, only when wording genuinely doesn't say which. Never ask again once a lane is chosen.
+- One command, adaptive depth: the user should not have to know in advance whether this is a
+  `/fix`-sized or `/autopilot`-sized ask.
+- Never ask whether to analyze or proceed; read it from the words.
 - Never invent an unavailable expert skill.
-- Analyze-only means **no code, no tests run, no memory writes** — that's the downstream lane's job, not this one's, when the ask was only to look.
+- Look-only means no code, no long-running checks, no memory writes.
