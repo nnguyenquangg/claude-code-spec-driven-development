@@ -11,8 +11,8 @@ decide whether the work is done: it runs only after the lane's own gate passed.
 
 ## 0. Preconditions (stop if one fails, and say which)
 - The project's checks are green on the final code.
-- A UI-visible change has a reviewed `ui-walkthrough` (out dir with screenshots and `review.md`
-  holding no open FINDING of this change's making).
+- A UI-visible change has a reviewed `ui-walkthrough`: `verify-screenshots/<date>-<task>/<slice>/`
+  with screenshots and a `review.md` holding no open FINDING of this change's making.
 - The three reviewers (`diff-reviewer`, `security-reviewer`, `edge-case-reviewer`) returned PASS,
   or the skip reason is written down.
 - The user did not say "local only" / "don't push". A repo with no remote, or `gh auth status`
@@ -64,7 +64,7 @@ else   # a fresh root commit with no branch name left behind
   git worktree add --detach "$W" && git -C "$W" checkout --orphan "evidence-$$" \
     && git -C "$W" rm -rfq --ignore-unmatch .
 fi || { echo "evidence worktree setup failed; not uploading"; exit 1; }
-mkdir -p "$W/$B" && cp <out>/<approved-1>.png <out>/<approved-2>.png "$W/$B/"   # by name, no glob
+mkdir -p "$W/$B" && cp <slice folder>/<approved-1>.png <slice folder>/<approved-2>.png "$W/$B/"   # by name, no glob
 git -C "$W" add "$B"
 if ! git -C "$W" diff --cached --quiet; then   # identical images: nothing to upload
   git -C "$W" commit -qm "evidence: $B" && git -C "$W" push origin HEAD:pr-evidence
