@@ -7,7 +7,7 @@
 // Verify like QA, through the real API: a write is wrapped in act() (awaits the page's request,
 // fails on non-2xx) and then read back with `api`; every backend call lands in api.log and any
 // 4xx/5xx the page made fails the walk.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -22,7 +22,8 @@ const API_URL = new URL(process.env.WALK_API_URL ?? 'http://localhost:5000/api/v
 const API_ORIGIN = API_URL.origin;
 const API_PATH = API_URL.pathname.replace(/\/+$/, ''); // '' when the API sits at the origin root
 const API = API_ORIGIN + API_PATH; // normalised base for the read-back client: no trailing slash, no query
-// WALK_OUT: where the screenshots, api.log and review.md go (outside the repo); else ./shots.
+// WALK_OUT: the slice folder from the skill's step 2, <repo>/verify-screenshots/<date>-<task>/<slice>
+// (git-excluded); without it the shots land in ./shots next to this throwaway script.
 const OUT = process.env.WALK_OUT ?? join(dirname(fileURLToPath(import.meta.url)), 'shots');
 mkdirSync(OUT, { recursive: true });
 
@@ -89,7 +90,8 @@ const act = async (method, pathRe, action) => {
 //   const get = async (path) => (await (await api.get(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } })).json()).data;
 const api = await pwRequest.newContext();
 
-let n = 0;
+// WALK_FROM=4 on a partial re-walk: the first shot is 04-..., so it replaces the shot it re-takes
+let n = Math.max(0, Number(process.env.WALK_FROM || 1) - 1);
 const shot = async (name) => {
   const file = join(OUT, `${String(++n).padStart(2, '0')}-${name}.png`);
   await page
@@ -130,7 +132,8 @@ try {
   await shot('failed');
   process.exitCode = 1;
 } finally {
-  writeFileSync(join(OUT, 'api.log'), calls.join('\n') + '\n');
+  // appended, one header per run: a partial re-walk keeps the calls the earlier steps made
+  appendFileSync(join(OUT, 'api.log'), `# walk ${new Date().toISOString()}\n` + calls.join('\n') + '\n');
   if (log.length) console.log(log.join('\n'));
   await browser.close();
   await api.dispose();

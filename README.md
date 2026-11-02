@@ -26,7 +26,8 @@ task ─► spec (OpenSpec, GIVEN / WHEN / THEN) ─► [your review, unless /au
      ─► build: failing test → smallest change → independent spec review → repeat
      ─► verify: lint · unit · e2e · call the API · ui-walkthrough
                   └ Playwright clicks through like a user, every write read back over the API,
-                    every screenshot read and logged in review.md
+                    every screenshot read and logged in review.md, kept per task in
+                    verify-screenshots/<date>-<task>/<slice>/ (git-excluded, never committed)
      ─► review: diff · security · edge-case reviewers, in parallel, blocking findings fixed
      ─► open-pr: feature branch, commit, DRAFT PR with spec, checks, screenshots, verdicts
 ```

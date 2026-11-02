@@ -25,10 +25,59 @@ saved the wrong value is a FINDING. Run against the real backend (any mock switc
 - List the flows from the task (the change's requirements / scenarios) the change touches, plus
   one neighbouring flow that shares the code.
 
-## 2. Script (throwaway, outside the repo)
+## 2. Where the evidence goes
+One folder per task in the repo, one sub-folder per slice or scenario, never committed:
+`<repo>/verify-screenshots/<YYYY-MM-DD>-<task-slug>/<slice>/` holding the PNGs, `review.md` and
+`api.log`. The task slug is short and readable (`invoice-export`, `partial-payments`); a task that
+spans several days keeps the folder it started in: `ls verify-screenshots` first and reuse an
+existing `*-<task-slug>` folder name instead of today's date. Run this before a slice's first shot;
+it only creates what is missing, so running it again is safe. Run it from inside the repo under
+test (`cd` there first when the frontend and backend are separate repos). Shell variables do not survive
+between commands, so use the `WALK_OUT=` path it prints, literally, in step 3:
+```bash
+( TASK="<YYYY-MM-DD>-<task-slug>"; SLICE="<slice>"        # fill both: letters, digits, . _ - only
+case "$TASK$SLICE" in *[!A-Za-z0-9._-]*|*..*|"") echo "refusing: bad task or slice name"; exit 1;; esac
+case "$TASK/$SLICE" in /*|*/|.*|*/.*) echo "refusing: empty or dot task/slice name"; exit 1;; esac
+REPO=$(git rev-parse --show-toplevel) || exit 1; EV="$REPO/verify-screenshots"; OUT="$EV/$TASK/$SLICE"
+for p in "$EV" "$EV/$TASK" "$OUT" "$EV/README.md"; do     # the repo is untrusted: no symlinks on the way
+  [ -L "$p" ] && { echo "refusing: $p is a symlink"; exit 1; }; done
+EX=$(git -C "$REPO" rev-parse --git-path info/exclude); case "$EX" in /*) ;; *) EX="$REPO/$EX";; esac
+mkdir -p "$(dirname "$EX")"
+grep -qxF 'verify-screenshots/' "$EX" 2>/dev/null || printf '\n%s\n' 'verify-screenshots/' >> "$EX"
+git -C "$REPO" check-ignore -q verify-screenshots/ &&      # the folder itself: nothing under an
+  [ -z "$(git -C "$REPO" ls-files ':(icase)verify-screenshots')" ] ||  # ignored folder can be re-included
+  { echo "refusing: this repo's .gitignore or tracked files would let the evidence into git"; exit 1; }
+mkdir -p "$OUT" && echo "WALK_OUT=$OUT" )
+```
+A partial re-walk (only the steps a fix touched) writes into the same folder and keeps
+`review.md`, adding FIXED lines under the old FINDING ones; start it with `WALK_FROM=<n>` so its
+shots keep the original numbers (the template appends to `api.log`, one header per run). Only a full re-walk of a slice starts
+over: `rm -rf "<that WALK_OUT path>"`, then run the snippet again.
+`.git/info/exclude` keeps it out of git without touching the project's `.gitignore`. Only git
+ignores it: a repo deployed with `docker build .` or rsync needs `verify-screenshots/` in its
+`.dockerignore` or exclude list too; a dev server or test runner that watches the whole repo will
+see the new files (add the folder to its ignore list if it reloads on them); and `git clean -fdx`
+deletes the evidence. The kit writes
+straight into the repo because it has no state folder of its own; the private harness it comes
+from copies evidence in only after the slice passes.
+
+After the review, keep `verify-screenshots/README.md` as the index. Everything outside the two
+marker lines stays as it is, line endings included. If the markers are missing, append this block at
+the end; if only one is there or either appears twice, leave the file alone and tell the user:
+```markdown
+<!-- walks:start -->
+| Date | Task folder | Slice | Screenshots | Status | Path |
+|---|---|---|---|---|---|
+<!-- walks:end -->
+```
+Then add one row per slice inside it, or replace the row whose task folder and slice match
+(Screenshots is the number of PNGs), e.g.
+`| 2026-11-02 | 2026-11-02-partial-payments | balance-column | 4 | reviewed | 2026-11-02-partial-payments/balance-column/ |`
+
+## 3. Script (throwaway, outside the repo)
 Copy `walk.template.mjs` from this skill folder into a temp/scratch directory as `walk.mjs`, fill
 in the `steps`, and run it with the project's Playwright:
-`WALK_OUT=<out dir> WALK_BASE_URL=<app> WALK_API_URL=<api base> NODE_PATH=<repo>/node_modules node <scratch>/walk.mjs`
+`WALK_OUT=<the path the step 2 snippet printed> WALK_BASE_URL=<app> WALK_API_URL=<api base> NODE_PATH=<repo>/node_modules node <scratch>/walk.mjs`
 Each step is a user action, then an `expect` on the result a user would see (the toast, the new
 status, the history line, the value that changed), then `shot('<nn-what-the-user-sees>')`.
 A step that writes (create, edit, delete, status, upload, bulk) wraps the click in
@@ -44,11 +93,11 @@ just created (read its id from the screen), never "the first row that matches", 
 values to something different from what is stored, or the edit proves nothing. Use the labels and
 roles a user sees (`getByRole`, `getByLabel`, visible text), not CSS selectors. Desktop 1440x900;
 add `WALK_VIEWPORT=390x844` when the page must work on a phone (a project rule on viewports wins).
-Screenshots and logs stay out of the repo (or in a git-ignored folder) and out of shared or synced folders: they can show user data. Never wrap a login or token-issuing call in `act()` (its body would be logged); log in through the UI or the read-back client. The template masks secret-looking query values in `api.log`; a flow that carries a secret in the path (`/reset-password/<token>`, `/invite/<code>`) is not masked, so do not share that walk's `api.log`.
+Screenshots and logs stay in that excluded folder, never in a commit, and out of shared or synced folders: they can show user data. Never wrap a login or token-issuing call in `act()` (its body would be logged); log in through the UI or the read-back client. The template masks secret-looking query values in `api.log`; a flow that carries a secret in the path (`/reset-password/<token>`, `/invite/<code>`) is not masked, so do not share that walk's `api.log`.
 
-## 3. Look at every screenshot
+## 4. Look at every screenshot
 Read each PNG with the Read tool, one at a time, the whole image: never judge a shot from its
-file name or the script's log. Write `review.md` in the out dir, one line per PNG, after the
+file name or the script's log. Write `review.md` in the slice folder (the `WALK_OUT` path), one line per PNG, after the
 last shot:
 `<file>.png | expected: <from the requirement> | shown: <the exact values and text on screen, plus the API call and read-back for a write> | OK|FIXED|FINDING`
 "shown" names what you actually read (the amount, the status label, the toast text, the row
@@ -59,7 +108,8 @@ code), no stray errors or toasts, empty and loading states, alignment / overflow
 disabled buttons explain why. A step that fails in the script is a finding too: screenshot the
 page at that moment.
 
-## 4. Report and act
+## 5. Report and act
+- Give the user the task folder (`verify-screenshots/<date>-<task>/`) as the place to review the evidence.
 - Findings table: step, screenshot path (full absolute path), what is wrong, severity.
 - Real bugs: fix them in the same unit of work, add a regression check (unit or e2e) where one
   fits, then re-walk the affected steps and read the new screenshots.
