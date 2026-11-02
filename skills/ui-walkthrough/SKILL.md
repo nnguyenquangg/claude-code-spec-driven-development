@@ -52,10 +52,9 @@ mkdir -p "$OUT" && echo "WALK_OUT=$OUT" )
 A partial re-walk (only the steps a fix touched) writes into the same folder and keeps
 `review.md`, adding FIXED lines under the old FINDING ones; start it with `WALK_FROM=<n>` so its
 shots keep the original numbers (the template appends to `api.log`, one header per run). Only a full re-walk of a slice starts
-over: empty that folder first, and when you clean it by a shell variable write the removal in the
-`"${WALK_OUT:?}"` form — `rm -f -- "${WALK_OUT:?}"/*.png "${WALK_OUT:?}/api.log"` — so the shell
-refuses to run if the variable is unset or empty (it would otherwise expand to `/`); this also keeps
-Claude Code's built-in dangerous-removal check from stopping to ask. Then run the snippet again.
+over: point `WALK_OUT` at a fresh folder (a new slice name, or `<slice>-reN`) and run the snippet
+again — never shell-`rm` the old evidence. The old folder is git-ignored throwaway; remove it by
+hand later if you ever need the space.
 `.git/info/exclude` keeps it out of git without touching the project's `.gitignore`. Only git
 ignores it: a repo deployed with `docker build .` or rsync needs `verify-screenshots/` in its
 `.dockerignore` or exclude list too; a dev server or test runner that watches the whole repo will
