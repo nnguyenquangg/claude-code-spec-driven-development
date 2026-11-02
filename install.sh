@@ -67,7 +67,7 @@ for c in task-analyzer research autopilot make-plan implement-specs fix spec-loo
 done
 
 echo "Installing agents ($MODE):"
-for a in diff-reviewer security-reviewer edge-case-reviewer; do
+for a in diff-reviewer security-reviewer edge-case-reviewer walkthrough-runner; do
   place "$REPO/agents/$a.md" "$AGENTS/$a.md"
 done
 

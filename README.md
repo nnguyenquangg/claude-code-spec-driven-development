@@ -28,7 +28,7 @@ task ─► spec (OpenSpec, GIVEN / WHEN / THEN) ─► [your review, unless /au
                   └ Playwright clicks through like a user, every write read back over the API,
                     every screenshot read and logged in review.md, kept per task in
                     verify-screenshots/<date>-<task>/<slice>/ (git-excluded, never committed)
-     ─► review: diff · security · edge-case reviewers, in parallel, blocking findings fixed
+     ─► review: diff · security · edge-case reviewers (+ walkthrough-runner for UI), in parallel, blocking findings fixed
      ─► open-pr: feature branch, commit, DRAFT PR with spec, checks, screenshots, verdicts
 ```
 
@@ -79,7 +79,7 @@ that, every repeated mistake becomes a line at the narrowest level where it is t
 
 - `skills/` — the commands above, plus `spec-loop`, `ui-walkthrough` (with a Playwright
   template), `open-pr` and `diagnose`.
-- `agents/` — `diff-reviewer`, `security-reviewer`, `edge-case-reviewer` (read-only).
+- `agents/` — `diff-reviewer`, `security-reviewer`, `edge-case-reviewer` (read-only), and `walkthrough-runner` (runs the UI walkthrough in parallel with them).
 - `harness-template/` + `scripts/harness-scaffold.sh` — the empty harness above.
 - `commands/` — slash-command wrappers. `docs/CLAUDE-snippet.md` — paste into a project's
   `CLAUDE.md` to make this the default workflow.

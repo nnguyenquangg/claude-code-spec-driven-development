@@ -68,6 +68,7 @@ List the toolkit, one line each, so they remember what's available:
 - `diagnose` — disciplined debugging loop (reproduce → minimise → hypothesise → instrument → fix → guard)
 - `ui-walkthrough` — click through the running app like a user, verify every write over the real API, read every screenshot
 - agents `diff-reviewer` · `security-reviewer` · `edge-case-reviewer` — the three parallel reviewers every non-trivial change gets before done
+- agent `walkthrough-runner` — runs the UI walkthrough (reads every screenshot), launched in the same parallel message as the three reviewers when the change is UI-visible
 - (optional) `dev-workflows:code-verifier` — code vs specs; `dev-workflows:quality-fixer` — fix lint/build/test
 
 Keep the whole output compact — it's a glanceable cheat-sheet, not a tutorial. Then stop.

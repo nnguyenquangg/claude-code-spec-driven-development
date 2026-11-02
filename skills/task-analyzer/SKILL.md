@@ -89,10 +89,17 @@ Expert(s): <primary> (+ <supporting>) — <why, one line>
   with the three reviewers run in parallel (one message, three Agent calls): `diff-reviewer`
   (task/spec, project rules, leftovers), `security-reviewer`, `edge-case-reviewer`, on the full
   diff of every repo touched, each given the task, the base branch, every repo path and the
-  OpenSpec change name. Blocking findings are fixed and the failing reviewer re-run. Skipping
-  needs a written reason in the final report.
+  OpenSpec change name. When the change is UI-visible, launch the `walkthrough-runner` agent in
+  the same parallel message (the implementer has prepared the servers, data and `walk.mjs`), so
+  reading the screenshots does not block. Done needs all four clean on the same frozen diff, the
+  walkthrough's own verdict deciding. Any blocking finding, from a reviewer or the walkthrough, is
+  fixed, then the three reviewers re-run and the walkthrough re-runs when the fix touches a walked
+  screen; a BLOCKED walk is an access problem, not a code fix. Skipping needs a written reason in
+  the final report.
 - **Done** means the project's checks pass and the behaviour was exercised for real (a request,
-  a command, the page), not only unit tests. A UI-visible change also gets a `ui-walkthrough`.
+  a command, the page), not only unit tests. A UI-visible change also gets a `ui-walkthrough`: a
+  non-trivial one as the `walkthrough-runner` agent at the review step above, a trivial one (the
+  `direct` lane, no review step) walked inline with the `ui-walkthrough` skill.
 
 ## Guardrails
 - One command, adaptive depth: the user should not have to know in advance whether this is a
