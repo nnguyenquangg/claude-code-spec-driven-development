@@ -1,6 +1,6 @@
 ---
 name: edge-case-reviewer
-description: Read-only hunt for edge cases a diff mishandles - null/empty/missing values, boundaries and limits, concurrency and retries, partial failure, ordering and idempotency, config gaps, mixed old/new deployments, i18n. One of the three parallel reviewers (diff, security, edge cases) every non-trivial change gets before push. Never edits files.
+description: Read-only hunt for edge cases a diff mishandles - null/empty/missing values, boundaries and limits, concurrency and retries, partial failure, ordering and idempotency, config gaps, mixed old/new deployments, i18n. One of the read-only reviewers the sized review step picks from (diff, security, edge cases). Never edits files.
 tools: Read, Grep, Glob, Bash
 ---
 

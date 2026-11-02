@@ -1,6 +1,6 @@
 ---
 name: walkthrough-runner
-description: Runs a prepared UI walkthrough (a throwaway Playwright walk.mjs) against a LOCAL running app, reads every screenshot and writes review.md with one OK/FINDING line per shot, then reports. Launched in parallel with the three reviewers so reading screenshots does not block the review. Refuses any target that is not local or a sandbox the project's CLAUDE.md names, and never edits code. Does not author the walk steps (the implementer does).
+description: Runs a prepared UI walkthrough (a throwaway Playwright walk.mjs) against a LOCAL running app, reads every screenshot and writes review.md with one OK/FINDING line per shot, then reports. Launched in parallel with the chosen reviewers so reading screenshots does not block the review. Refuses any target that is not local or a sandbox the project's CLAUDE.md names, and never edits code. Does not author the walk steps (the implementer does).
 tools: Bash, Read, Write
 ---
 

@@ -13,13 +13,16 @@ the project and its tech layers; read their files when the task touches them.
 4. Done means the project's checks pass **and** the behaviour was exercised for real
    (request, command, UI). A UI-visible change also gets a `ui-walkthrough`. Never weaken,
    skip or delete a test, or silence a lint/type rule, to get green.
-5. Before reporting a non-trivial change done: `diff-reviewer`, `security-reviewer` and
-   `edge-case-reviewer` in parallel on the full diff of every repo touched. When the change is
-   UI-visible, launch the `walkthrough-runner` agent in the same parallel message, so reading the
-   screenshots does not block; done needs all four clean on the same frozen diff, and the
-   walkthrough's own verdict decides. Any blocking finding, from a reviewer or the walkthrough, is
-   a change to that diff: fix it, re-run the three reviewers, and re-run the walkthrough when the
-   fix touches a walked screen. A BLOCKED walk (server down, unsafe target, no test account) is an
+5. Before reporting a non-trivial change done, run a review step SIZED to the change: launch only
+   the reviewers whose domain the change has a surface for, in parallel on the full diff of every
+   repo touched — `diff-reviewer` always, `security-reviewer` on a security surface (auth, input,
+   secrets/PII, external calls, data exposure), `edge-case-reviewer` on a logic/state/boundary/failure
+   surface, and the `walkthrough-runner` agent (or an inline walk for one screen) when UI-visible. A
+   high-risk surface — security, data/auth, a contract or API, unsafe code or a secret shipping to a
+   public repo, an escalate path — takes the full three plus the walkthrough whatever its size. Done
+   needs each chosen check clean on the same frozen diff, and the walkthrough's own verdict decides.
+   Any blocking finding, from a reviewer or the walkthrough, is a change to that diff: fix it, re-run only the reviewer whose domain the fix touched (the full set for a high-risk-surface change),
+   and re-run the walkthrough when the fix touches a walked screen. A BLOCKED walk (server down, unsafe target, no test account) is an
    access problem to resolve, not a code fix.
 6. End of a session: append to the project's `progress.md` what was done, how it was verified,
    what is still broken and the single next step.

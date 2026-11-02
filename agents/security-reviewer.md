@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: Read-only security review of a diff - authn/authz gaps, injection, secrets and PII exposure, unsafe input handling, SSRF, brute-force and enumeration, crypto and session misuse, dependency risk. One of the three parallel reviewers (diff, security, edge cases) every non-trivial change gets before push. Never edits files.
+description: Read-only security review of a diff - authn/authz gaps, injection, secrets and PII exposure, unsafe input handling, SSRF, brute-force and enumeration, crypto and session misuse, dependency risk. One of the read-only reviewers the sized review step picks from (diff, security, edge cases). Never edits files.
 tools: Read, Grep, Glob, Bash
 ---
 

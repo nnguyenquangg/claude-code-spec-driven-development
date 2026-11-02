@@ -13,7 +13,7 @@ decide whether the work is done: it runs only after the lane's own gate passed.
 - The project's checks are green on the final code.
 - A UI-visible change has a reviewed `ui-walkthrough`: `verify-screenshots/<date>-<task>/<slice>/`
   with screenshots and a `review.md` holding no open FINDING of this change's making.
-- The three reviewers (`diff-reviewer`, `security-reviewer`, `edge-case-reviewer`) returned PASS,
+- The review step's chosen reviewers (sized to the change) returned PASS,
   or the skip reason is written down.
 - The user did not say "local only" / "don't push". A repo with no remote, or `gh auth status`
   failing: do steps 1–2 only and report that the PR could not be opened.

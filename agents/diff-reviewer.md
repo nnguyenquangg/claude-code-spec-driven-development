@@ -1,6 +1,6 @@
 ---
 name: diff-reviewer
-description: Read-only review of a diff for correctness against the task and the project's standards - missing or wrong requirements, scope creep, leftovers the change made redundant (constant flags, dead branches, stale names/docs), code smells. One of the three parallel reviewers (diff, security, edge cases) every non-trivial change gets before push. Never edits files.
+description: Read-only review of a diff for correctness against the task and the project's standards - missing or wrong requirements, scope creep, leftovers the change made redundant (constant flags, dead branches, stale names/docs), code smells. One of the read-only reviewers the sized review step picks from (diff, security, edge cases). Never edits files.
 tools: Read, Grep, Glob, Bash
 ---
 

@@ -74,6 +74,7 @@ In-flight change: <none | openspec change name>
 Lane: <direct|fix|make-plan|autopilot|research> — <why, one line>
 Spec: <trivial, none | will be written: openspec/changes/<name> | exists: <name>>
 Expert(s): <primary> (+ <supporting>) — <why, one line>
+Reviewers: <sized set + why: diff only | diff+edge | full three (+walkthrough for UI) — the surfaces it touches>
 ```
 
 ## 5. Act (do-mode)
@@ -85,15 +86,17 @@ Expert(s): <primary> (+ <supporting>) — <why, one line>
 - **Follow the lane's own SKILL.md end to end** (`fix`, `autopilot`, `make-plan`, `research`)
   as if the user had invoked it, passing this analysis so it is not redone. That lane's
   guardrails apply in full: `make-plan` still stops for review with no production code.
-- **Review step is not optional**: anything beyond trivial, review-fix rounds included, ends
-  with the three reviewers run in parallel (one message, three Agent calls): `diff-reviewer`
-  (task/spec, project rules, leftovers), `security-reviewer`, `edge-case-reviewer`, on the full
-  diff of every repo touched, each given the task, the base branch, every repo path and the
-  OpenSpec change name. When the change is UI-visible, launch the `walkthrough-runner` agent in
-  the same parallel message (the implementer has prepared the servers, data and `walk.mjs`), so
-  reading the screenshots does not block. Done needs all four clean on the same frozen diff, the
-  walkthrough's own verdict deciding. Any blocking finding, from a reviewer or the walkthrough, is
-  fixed, then the three reviewers re-run and the walkthrough re-runs when the fix touches a walked
+- **Review step is sized to the change** (protocol rule 5): anything beyond trivial, review-fix
+  rounds included, launches only the reviewers whose domain the change has a surface for, in parallel
+  (one message): `diff-reviewer` always; `security-reviewer` on a security surface (auth, input,
+  secrets/PII, external calls, data exposure); `edge-case-reviewer` on a logic/state/boundary/failure
+  surface; the walkthrough for a UI-visible change (inline for one screen, the `walkthrough-runner`
+  agent in the same message for several screens/flows). A high-risk surface — security, data/auth, a
+  contract or API, unsafe code or a secret shipping to a public repo, an escalate path — takes the
+  full three plus the walkthrough whatever its size. Each reviewer gets the task, the base branch,
+  every repo path and the OpenSpec change name. Done needs each chosen check clean on the same frozen
+  diff, the walkthrough's own verdict deciding. Any blocking finding is fixed, then only the reviewer whose domain the fix touched re-runs (the full set for a high-risk-surface change),
+  and the walkthrough re-runs when the fix touches a walked
   screen; a BLOCKED walk is an access problem, not a code fix. Skipping needs a written reason in
   the final report.
 - **Done** means the project's checks pass and the behaviour was exercised for real (a request,

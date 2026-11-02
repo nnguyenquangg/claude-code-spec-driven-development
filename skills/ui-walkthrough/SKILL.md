@@ -117,13 +117,13 @@ mid-loop or a trivial fix, which stay inline (section 4). Reading every screensh
 session blocks everything else. For the final gate the implementer assembles one `walk.mjs` covering
 every flow the change touched into one `verify-screenshots/<date>-<task>/final/` folder; then, rather
 than reading the shots yourself, hand the running and reading to the `walkthrough-runner` agent and
-launch it in the SAME message as the three reviewers (one message, four Agent calls), so all four run
-while you wait once. Give the agent: the `walk.mjs` path and `WALK_OUT` (that `final/` folder),
+launch it in the same parallel message as the sized reviewer set (protocol rule 5), so the
+walkthrough and the reviewers run while you wait once. Give the agent: the `walk.mjs` path and `WALK_OUT` (that `final/` folder),
 `WALK_BASE_URL` / `WALK_API_URL` / the project's `NODE_PATH`, a test login, and each scenario's
 expected outcome (the requirement's THEN). It runs the script, reads every PNG, writes `review.md`
-and reports. Done needs all four clean on the same frozen diff, and the agent's own verdict decides
+and reports. Done needs each chosen check clean on the same frozen diff, and the agent's own verdict decides
 even when screenshots from a prior attempt already sit in `WALK_OUT`. Any blocking finding, from a
-reviewer or the walkthrough, changes the diff: re-run the three reviewers, and re-run the walkthrough
+reviewer or the walkthrough, changes the diff: re-run only the reviewer whose domain the fix touched (the full set for a high-risk-surface change), and re-run the walkthrough
 when the fix touches a walked screen. A BLOCKED walk (server down, unsafe target, no test account) is
 an access problem, not a code fix.
 
