@@ -32,8 +32,55 @@ mkdirSync(OUT, { recursive: true });
 // (a project standard that asks for both viewports wins: walk twice).
 const browser = await chromium.launch({ channel: process.env.WALK_CHANNEL || undefined });
 const [width, height] = (process.env.WALK_VIEWPORT ?? '1440x900').split('x').map(Number);
-const page = await browser.newPage({ viewport: { width, height } });
+const page = await browser.newPage({ viewport: { width, height }, serviceWorkers: 'block' });
 page.setDefaultTimeout(10_000);
+
+// --- loopback guard (ui-walkthrough): the app under test may reach only a local backend, or a
+// sandbox host listed in WALK_ALLOW_HOSTS (comma-separated bare hostnames). Deny by default:
+// anything the page sends to another host that is NOT a static asset (an xhr/fetch/eventsource/
+// navigation, or a websocket) is a real backend call; it is aborted (or, for a socket, never
+// connected) and the walk exits 3 = BLOCKED, since a shared dev/UAT/prod backend would otherwise
+// fire real side effects unattended. Service workers are disabled (newPage above) so the guard sees
+// every request - page.route cannot intercept a service-worker-proxied call. A cross-host static
+// asset (CDN script/style/image/font) is still allowed, so a JSONP <script> or tracking-pixel <img>
+// is a known accepted gap; put a sandbox backend in WALK_ALLOW_HOSTS, never a workaround.
+const normHost = (h) => {
+  const s = h.trim().toLowerCase();
+  if (!s) return '';
+  try { return new URL(s.includes('://') ? s : `http://${s}`).hostname; } catch { return s.replace(/:\d+$/, ''); }
+};
+const ALLOW_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]',
+  ...(process.env.WALK_ALLOW_HOSTS ?? '').split(',').map(normHost).filter(Boolean)]);
+const hostOf = (u) => { try { return new URL(u).hostname.toLowerCase(); } catch { return ''; } };
+const isLocal = (h) => ALLOW_HOSTS.has(h) || h.endsWith('.localhost'); // *.localhost resolves to loopback
+const offLimits = (u) => { const h = hostOf(u); return h !== '' && !isLocal(h); };
+// only these static-asset types may load cross-host (a CDN); every other type to a non-loopback host
+// is treated as a backend call and blocked.
+const ASSET_TYPES = new Set(['script', 'stylesheet', 'image', 'font', 'media', 'texttrack', 'manifest']);
+const guarded = (req) => !ASSET_TYPES.has(req.resourceType()) && offLimits(req.url());
+const external = [];
+const flag = (what) => { if (!external.includes(what)) external.push(what); };
+const flagReq = (req) => flag(`${req.method()} ${req.resourceType()} ${hostOf(req.url())}`);
+const ctx = page.context();
+await ctx.route('**/*', (route) => {
+  const req = route.request();
+  if (guarded(req)) { flagReq(req); return route.abort(); }
+  return route.continue();
+});
+// backstop: record any off-limits request a route interceptor could miss (worker, race), deduped
+ctx.on('request', (req) => { if (guarded(req)) flagReq(req); });
+// websockets are not seen by route. Block an off-limits socket outright on Playwright >= 1.48 (never
+// open the server leg), for every page in the context (popups included); on older versions, detect.
+if (typeof ctx.routeWebSocket === 'function') {
+  await ctx.routeWebSocket('**/*', (ws) => {
+    if (offLimits(ws.url())) { flag(`WS ${hostOf(ws.url())}`); return; }
+    ws.connectToServer();
+  });
+} else {
+  const watchWs = (p) => p.on('websocket', (ws) => { if (offLimits(ws.url())) flag(`WS ${hostOf(ws.url())}`); });
+  watchWs(page);
+  ctx.on('page', watchWs);
+}
 
 const log = [];
 page.on('console', (m) => m.type() === 'error' && log.push(`console: ${m.text()}`));
@@ -127,14 +174,17 @@ try {
   await steps();
   const bad = calls.filter((c) => /\s[45]\d\d$/.test(c));
   if (bad.length) throw new Error(`backend errors: ${bad.join(', ')}`);
+  if (external.length) throw new Error(`BLOCKED external host(s): ${external.join(', ')}`);
 } catch (error) {
   console.log(`STEP FAILED: ${error.message.split('\n').slice(0, 4).join(' | ')}`);
-  await shot('failed');
-  process.exitCode = 1;
+  process.exitCode = external.length ? 3 : 1;
+  if (external.length) console.log(`WALK BLOCKED: external host(s): ${external.join(', ')}`);
+  await shot('failed').catch(() => {});   // a throwing shot must not swallow the exit code set above
 } finally {
+  if (external.length) process.exitCode = 3;   // a late fire-and-forget external call still forces BLOCKED
   // appended, one header per run: a partial re-walk keeps the calls the earlier steps made
-  appendFileSync(join(OUT, 'api.log'), `# walk ${new Date().toISOString()}\n` + calls.join('\n') + '\n');
+  appendFileSync(join(OUT, 'api.log'), `# walk ${new Date().toISOString()}\n` + [...external.map((e) => `EXTERNAL ${e} blocked`), ...calls].join('\n') + '\n');
   if (log.length) console.log(log.join('\n'));
-  await browser.close();
-  await api.dispose();
+  await browser.close().catch(() => {});
+  await api.dispose().catch(() => {});
 }

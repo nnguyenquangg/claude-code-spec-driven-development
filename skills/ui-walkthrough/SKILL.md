@@ -52,7 +52,10 @@ mkdir -p "$OUT" && echo "WALK_OUT=$OUT" )
 A partial re-walk (only the steps a fix touched) writes into the same folder and keeps
 `review.md`, adding FIXED lines under the old FINDING ones; start it with `WALK_FROM=<n>` so its
 shots keep the original numbers (the template appends to `api.log`, one header per run). Only a full re-walk of a slice starts
-over: `rm -rf "<that WALK_OUT path>"`, then run the snippet again.
+over: empty that folder first, and when you clean it by a shell variable write the removal in the
+`"${WALK_OUT:?}"` form — `rm -f -- "${WALK_OUT:?}"/*.png "${WALK_OUT:?}/api.log"` — so the shell
+refuses to run if the variable is unset or empty (it would otherwise expand to `/`); this also keeps
+Claude Code's built-in dangerous-removal check from stopping to ask. Then run the snippet again.
 `.git/info/exclude` keeps it out of git without touching the project's `.gitignore`. Only git
 ignores it: a repo deployed with `docker build .` or rsync needs `verify-screenshots/` in its
 `.dockerignore` or exclude list too; a dev server or test runner that watches the whole repo will
@@ -86,7 +89,7 @@ its data; after it, read the record back over the API (`api.get`) and `expect` t
 (the field you changed, the status, the history entry, the row that must be gone, 404 after a
 delete). Reads that drive the screen (list filters, search, sort, detail) are checked the same
 way: the request carries the filter and the response holds what the screen shows. The template
-records every backend call in `api.log` and fails the walk on any 4xx/5xx the page made. Point `WALK_API_URL` at the API prefix (`/api/v1`), not the bare origin, when the app and its API share an origin, or every page asset counts as a backend call; use the same host spelling the page uses (`localhost` vs `127.0.0.1`). An empty `api.log` after a write is a finding: nothing was recorded
+records every backend call in `api.log` and fails the walk on any 4xx/5xx the page made, and its loopback guard (the `page.context().route` block near the top, service workers disabled) aborts and fails the walk on any non-asset call — an xhr/fetch/eventsource/navigation, and an off-limits websocket (blocked outright on Playwright >= 1.48, otherwise detected) — the page makes to a host that is not local (`localhost`, `127.0.0.1`, `::1` or `*.localhost`, plus any `WALK_ALLOW_HOSTS` sandbox): the app's own backend, wherever its build or `.env` points it, must be local. A flow that embeds a third-party widget (a payment or captcha iframe on another host) is stubbed locally or walked inline by the implementer; `WALK_ALLOW_HOSTS` is for a named sandbox backend, not a convenience, and the `walkthrough-runner` agent is handed it only under the sandbox exception. Never delete the guard. Point `WALK_API_URL` at the API prefix (`/api/v1`), not the bare origin, when the app and its API share an origin, or every page asset counts as a backend call; use the same host spelling the page uses (`localhost` vs `127.0.0.1`). An empty `api.log` after a write is a finding: nothing was recorded
 (including refetches after the action), so read `api.log` with the screenshots. Never a
 bare `waitForTimeout`: a step that silently did nothing must fail the walk. Act on the record you
 just created (read its id from the screen), never "the first row that matches", and change
@@ -108,7 +111,23 @@ code), no stray errors or toasts, empty and loading states, alignment / overflow
 disabled buttons explain why. A step that fails in the script is a finding too: screenshot the
 page at that moment.
 
-## 5. Report and act
+## 5. Run it in parallel with the reviewers
+This is the **final review gate**, when you declare the change done — not a single slice walked
+mid-loop or a trivial fix, which stay inline (section 4). Reading every screenshot in the main
+session blocks everything else. For the final gate the implementer assembles one `walk.mjs` covering
+every flow the change touched into one `verify-screenshots/<date>-<task>/final/` folder; then, rather
+than reading the shots yourself, hand the running and reading to the `walkthrough-runner` agent and
+launch it in the SAME message as the three reviewers (one message, four Agent calls), so all four run
+while you wait once. Give the agent: the `walk.mjs` path and `WALK_OUT` (that `final/` folder),
+`WALK_BASE_URL` / `WALK_API_URL` / the project's `NODE_PATH`, a test login, and each scenario's
+expected outcome (the requirement's THEN). It runs the script, reads every PNG, writes `review.md`
+and reports. Done needs all four clean on the same frozen diff, and the agent's own verdict decides
+even when screenshots from a prior attempt already sit in `WALK_OUT`. Any blocking finding, from a
+reviewer or the walkthrough, changes the diff: re-run the three reviewers, and re-run the walkthrough
+when the fix touches a walked screen. A BLOCKED walk (server down, unsafe target, no test account) is
+an access problem, not a code fix.
+
+## 6. Report and act
 - Give the user the task folder (`verify-screenshots/<date>-<task>/`) as the place to review the evidence.
 - Findings table: step, screenshot path (full absolute path), what is wrong, severity.
 - Real bugs: fix them in the same unit of work, add a regression check (unit or e2e) where one
