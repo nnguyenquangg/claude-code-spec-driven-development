@@ -25,7 +25,11 @@ the project and its tech layers; read their files when the task touches them.
    and re-run the walkthrough when the fix touches a walked screen. A BLOCKED walk (server down, unsafe target, no test account) is an
    access problem to resolve, not a code fix.
 6. End of a session: append to the project's `progress.md` what was done, how it was verified,
-   what is still broken and the single next step.
+   what is still broken and the single next step. Then a quick cost retro: if the run spent time or
+   tokens a rule could save next time (a review wider or longer than the change warranted, re-reading
+   or re-searching the same thing, the wrong track, redundant checks, work you had to redo), note the
+   lesson where this repo keeps its conventions (its `CLAUDE.md`, a notes file, or the project memory)
+   so the next run is cheaper; a clean run notes nothing.
 7. Git: the build lanes (`/fix`, `/implement-specs`, `/autopilot`) finish with `open-pr`: a
    feature branch, one commit (plus one per review-fix round), a push of that branch and a draft PR with the evidence. Anything
    else is pushed only when the user asks. Never merge, never push the default branch, never
